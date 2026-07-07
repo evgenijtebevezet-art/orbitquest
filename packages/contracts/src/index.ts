@@ -1,4 +1,5 @@
 export * from "./content.ts";
+export * from "./profile.ts";
 
 export const deckIds = ["bridge", "atlas", "radar", "hangar"] as const;
 
