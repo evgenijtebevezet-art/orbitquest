@@ -775,3 +775,31 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--cyan); o
 .skill-node.cap-recognizes i { background: var(--cyan); }
 .skill-node.cap-applies i { background: var(--green); }
 .skill-node.cap-transfers i { background: var(--violet); }
+
+/* ---------- Спросить KORA ---------- */
+
+.ask-kora { display: flex; flex-direction: column; gap: 10px; }
+.ask-kora-row { display: flex; gap: 8px; }
+.ask-kora-row input {
+  flex: 1;
+  font: inherit;
+  color: inherit;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-solid);
+}
+.ask-kora-row input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.ask-kora-row button {
+  min-width: 96px;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(85, 231, 255, 0.4);
+  background: rgba(85, 231, 255, 0.08);
+  color: var(--cyan);
+  font-weight: 700;
+  cursor: pointer;
+}
+.ask-kora-row button:disabled { opacity: 0.4; cursor: default; }
+.kora-thinking { margin: 0; color: var(--muted); }

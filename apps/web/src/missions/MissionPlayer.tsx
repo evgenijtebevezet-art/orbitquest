@@ -6,6 +6,7 @@ import {
   type EngineEvent,
   type EngineState,
 } from "./engine";
+import { askKora } from "../kora/askKora";
 
 interface MissionPlayerProps {
   mission: Mission;
@@ -58,10 +59,68 @@ function Briefing({ mission, onBegin }: { mission: Mission; onBegin: () => void 
           <p key={line}>{line}</p>
         ))}
       </div>
+      <AskKoraPanel mission={mission} taskId={null} hintStage={0} enabled />
       <button type="button" className="prologue-action" onClick={onBegin}>
         Начать миссию · {mission.tasks.length} заданий
       </button>
     </section>
+  );
+}
+
+interface AskKoraPanelProps {
+  mission: Mission;
+  taskId: string | null;
+  hintStage: 0 | 1 | 2 | 3;
+  enabled: boolean;
+}
+
+function AskKoraPanel({ mission, taskId, hintStage, enabled }: AskKoraPanelProps) {
+  const [question, setQuestion] = useState("");
+  const [pending, setPending] = useState(false);
+  const [reply, setReply] = useState<{ text: string; live: boolean } | null>(null);
+
+  async function submit() {
+    const trimmed = question.trim();
+    if (!trimmed || pending) return;
+    setPending(true);
+    setReply(null);
+    const result = await askKora({ missionId: mission.id, taskId, hintStage, question: trimmed });
+    setReply(
+      result.live
+        ? { text: result.text, live: true }
+        : { text: mission.koraFallback, live: false },
+    );
+    setPending(false);
+  }
+
+  if (!enabled) return null; // UI-gate: до первой содержательной попытки KORA не зовётся
+
+  return (
+    <div className="ask-kora">
+      <div className="ask-kora-row">
+        <input
+          type="text"
+          value={question}
+          maxLength={600}
+          placeholder="Спросить KORA своими словами…"
+          aria-label="Вопрос KORA"
+          onChange={(event) => setQuestion(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") void submit();
+          }}
+        />
+        <button type="button" disabled={pending || !question.trim()} onClick={() => void submit()}>
+          {pending ? "…" : "Спросить"}
+        </button>
+      </div>
+      {pending && <p className="kora-thinking">KORA думает…</p>}
+      {reply && (
+        <div className="kora-hint">
+          <b>{reply.live ? "KORA" : "Бортовая справка · KORA офлайн"}</b>
+          <p>{reply.text}</p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -102,6 +161,12 @@ function TaskPhase({ mission, state, dispatch }: TaskPhaseProps) {
             <b>KORA · подсказка {state.hintStage}/3</b>
             <p>{task.hints[state.hintStage - 1]}</p>
           </div>
+          <AskKoraPanel
+            mission={mission}
+            taskId={task.id}
+            hintStage={state.hintStage}
+            enabled={taskFirstAttemptMade(state, task)}
+          />
           <button type="button" className="prologue-action" onClick={() => dispatch({ type: "retry" })}>
             Попробовать ещё раз · осталось {state.attemptsLeft}
           </button>
