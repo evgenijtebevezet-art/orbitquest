@@ -13,9 +13,14 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "art": "node scripts/optimize-art.mjs",
+    "validate:content": "node --experimental-strip-types scripts/validate-content.mjs"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.3"
   }
 }
