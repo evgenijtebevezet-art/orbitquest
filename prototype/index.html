@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#050915">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23070d20' stroke='%235be9ff' stroke-width='3'/%3E%3Cellipse cx='32' cy='32' rx='24' ry='9' fill='none' stroke='%239b7cff' stroke-width='3' transform='rotate(-22 32 32)'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%235be9ff'/%3E%3C/svg%3E">
+  <title>OrbitQuest — Мостик Odyssey</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="game-shell">
+    <header class="ship-header">
+      <a class="brand" href="#" data-scene="bridge" aria-label="OrbitQuest — мостик">
+        <span class="brand-orbit"><i></i></span>
+        <span><strong>ORBIT</strong>QUEST</span>
+      </a>
+      <div class="ship-id">
+        <span>ИССЛЕДОВАТЕЛЬСКИЙ КОРАБЛЬ</span>
+        <strong>ODYSSEY · NQ-07</strong>
+      </div>
+      <div class="header-status">
+        <div><small>СВЯЗЬ С ATLAS</small><strong><i class="status-light"></i> СТАБИЛЬНА</strong></div>
+        <div><small>ЦИКЛ</small><strong>12 ДНЕЙ</strong></div>
+        <button class="round-button" aria-label="Настройки корабля">⚙</button>
+      </div>
+    </header>
+
+    <aside class="deck-nav" aria-label="Палубы Odyssey">
+      <div class="nav-label">ПАЛУБЫ</div>
+      <button class="deck-button active" data-scene="bridge"><span>⌂</span><b>Мостик</b><small>01</small></button>
+      <button class="deck-button" data-scene="constellation"><span>✦</span><b>Созвездие</b><small>02</small></button>
+      <button class="deck-button has-signal" data-scene="radar"><span>⌁</span><b>Радар</b><small>03</small><i>3</i></button>
+      <button class="deck-button" data-scene="hangar"><span>⌗</span><b>Ангар</b><small>04</small></button>
+      <button class="deck-button" data-scene="archive"><span>▤</span><b>Архив</b><small>05</small></button>
+      <div class="nav-spacer"></div>
+      <button class="crew-button" id="crew-button">
+        <span class="crew-avatar">GG</span>
+        <span><b>Навигатор Gento</b><small>ранг 04 · Синхронизатор</small></span>
+      </button>
+    </aside>
+
+    <main class="viewport">
+      <section class="scene active" id="scene-bridge" aria-label="Мостик Odyssey">
+        <div class="bridge-window">
+          <div class="stars stars-a"></div>
+          <div class="stars stars-b"></div>
+          <div class="nebula"></div>
+          <div class="planet"><i></i></div>
+          <div class="atlas-label"><span></span> СЕКТОР ATLAS / AGENT SYSTEMS</div>
+
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <button class="satellite drifting" id="target-satellite" aria-label="Спутник Tools-03 требует калибровки">
+            <span class="sat-body"><i></i></span>
+            <span class="solar left"></span><span class="solar right"></span>
+            <b>TOOLS-03</b><small>СДВИГ ОРБИТЫ</small>
+          </button>
+          <div class="signal-line"></div>
+
+          <div class="window-frame frame-top"></div>
+          <div class="window-frame frame-left"></div>
+          <div class="window-frame frame-right"></div>
+        </div>
+
+        <div class="transmission" id="transmission-card">
+          <div class="transmission-icon">V</div>
+          <div>
+            <span>ПЕРЕДАЧА VEGA · ПОДТВЕРЖДЕНО</span>
+            <strong>Обнаружено изменение в секторе Tools</strong>
+            <small>Официальный источник · затронуты 2 навыка</small>
+          </div>
+          <button id="open-signal">Открыть сигнал →</button>
+        </div>
+
+        <div class="kora-presence">
+          <div class="kora-visual" aria-label="KORA, AI-навигатор">
+            <div class="kora-ring ring-a"></div>
+            <div class="kora-ring ring-b"></div>
+            <div class="kora-ring ring-c"></div>
+            <div class="kora-core"><span></span></div>
+            <div class="kora-pulse"></div>
+          </div>
+          <div class="kora-dialogue">
+            <div class="speaker"><span>KORA</span><small>КОГНИТИВНЫЙ НАВИГАТОР</small></div>
+            <p id="kora-message">Навигатор, спутник TOOLS-03 теряет орбиту. Причина — путаница между описанием инструмента и разрешением на его выполнение.</p>
+            <div class="dialogue-actions">
+              <button data-kora="goal">Что нужно сделать?</button>
+              <button data-kora="why">Почему это важно?</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pix-bay">
+          <div class="pix-drone" aria-label="PIX, ремонтный дрон">
+            <span class="pix-antenna"></span>
+            <div class="pix-head"><i class="eye eye-left"></i><i class="eye eye-right"></i><b></b></div>
+            <div class="pix-arm arm-left"></div><div class="pix-arm arm-right"></div>
+          </div>
+          <div class="pix-bubble"><b>PIX</b><span id="pix-message">Инструменты готовы. Ошибки тоже. Я всё предусмотрел.</span></div>
+        </div>
+
+        <article class="mission-console">
+          <div class="console-topline"><span>МИССИЯ 03-14 · КАЛИБРОВКА</span><span>≈ 12 МИН</span></div>
+          <div class="mission-main">
+            <div class="mission-symbol">⌬</div>
+            <div>
+              <small>AI CODING / AGENT SYSTEMS</small>
+              <h1>Восстановить канал Tools</h1>
+              <p>Отдели выбор инструмента моделью от реального разрешения backend и исправь небезопасный вызов.</p>
+            </div>
+            <button class="launch-button" id="mission-action"><span>Начать калибровку</span><i>→</i></button>
+          </div>
+          <div class="mission-route">
+            <div class="route-step active"><i>01</i><span>Сигнал</span></div><b></b>
+            <div class="route-step"><i>02</i><span>Схема</span></div><b></b>
+            <div class="route-step"><i>03</i><span>Ремонт</span></div><b></b>
+            <div class="route-step"><i>04</i><span>Симуляция</span></div>
+          </div>
+        </article>
+
+        <div class="bridge-readout">
+          <div><small>СТАБИЛЬНОСТЬ СОЗВЕЗДИЯ</small><strong id="stability-value">78%</strong><span class="readout-bar"><i id="stability-bar"></i></span></div>
+          <div><small>ВОССТАНОВЛЕНО</small><strong>24</strong><span>спутника</span></div>
+          <div class="warning"><small>ТРЕБУЮТ ВНИМАНИЯ</small><strong>03</strong><span>канала</span></div>
+        </div>
+      </section>
+
+      <section class="scene" id="scene-constellation">
+        <div class="scene-header"><div><small>НАВИГАЦИОННАЯ ПАЛУБА</small><h1>Созвездие Atlas</h1><p>KORA предлагает маршрут, но выбор сектора остаётся за тобой.</p></div><button class="chip">Стабильность 78%</button></div>
+        <div class="galaxy-map">
+          <div class="map-nebula"></div>
+          <button class="system-node stable node-context" data-system="Контекст"><i></i><b>Контекст</b><small>7/7 стабильно</small></button>
+          <button class="system-node stable node-tools" data-system="Tools"><i></i><b>Tools</b><small>5/6 стабильно</small></button>
+          <button class="system-node current node-permissions" data-system="Permissions"><i></i><b>Permissions</b><small>текущая миссия</small></button>
+          <button class="system-node drifting node-mcp" data-system="MCP"><i></i><b>MCP</b><small>обнаружен Сдвиг</small></button>
+          <button class="system-node locked node-memory" data-system="Memory"><i></i><b>Memory</b><small>маршрут закрыт</small></button>
+          <button class="system-node locked node-evals" data-system="Evals"><i></i><b>Evals</b><small>маршрут закрыт</small></button>
+          <svg class="map-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path d="M150 310 C260 150 330 160 430 260 S610 410 700 250 S830 170 900 320"/><path d="M430 260 C500 120 650 110 700 250"/></svg>
+          <div class="map-kora"><span></span><p id="map-message"><b>KORA:</b> Сектор Permissions даст максимальное усиление текущему маршруту.</p></div>
+        </div>
+      </section>
+
+      <section class="scene" id="scene-radar">
+        <div class="scene-header"><div><small>ДАЛЬНЯЯ СВЯЗЬ</small><h1>Радар сигналов</h1><p>VEGA отделяет подтверждённые передачи от информационного шума.</p></div><div class="radar-sweep"><i></i></div></div>
+        <div class="signal-grid">
+          <article class="signal-card critical"><span class="signal-type">ДЕЙСТВИЕ НУЖНО</span><h2>Сектор Tools потерял синхронизацию</h2><p>Официальный changelog изменил рекомендуемый способ контроля инструментов. Затронуты два освоенных спутника.</p><div><small>VEGA · TIER A · СЕГОДНЯ</small><button data-scene="bridge">Принять миссию →</button></div></article>
+          <article class="signal-card verified"><span class="signal-type">ПОДТВЕРЖДЕНО</span><h2>Новый стабильный релиз</h2><p>Сигнал полезен для будущей экспедиции, но не требует переобучения сейчас.</p><div><small>OFFICIAL RELEASE · ВЧЕРА</small><button>В архив</button></div></article>
+          <article class="signal-card research"><span class="signal-type">ИССЛЕДОВАНИЕ</span><h2>Новый подход к evals</h2><p>Результат интересный, но пока не считается production-фактом.</p><div><small>PAPER + REPOSITORY · 2 ДНЯ</small><button>Наблюдать</button></div></article>
+          <article class="signal-card noise-card"><span class="signal-type">ШУМ ОТФИЛЬТРОВАН</span><h2>«Революционный» AI-инструмент</h2><p>Нет первичного источника, воспроизводимого результата и влияния на текущий маршрут.</p><div><small>UNVERIFIED · ОТКЛОНЕНО</small><button>Почему?</button></div></article>
+        </div>
+      </section>
+
+      <section class="scene" id="scene-hangar">
+        <div class="scene-header"><div><small>РЕМОНТНАЯ ПАЛУБА</small><h1>Ангар PIX</h1><p>Здесь знания проходят симуляцию, тесты и самостоятельный перенос.</p></div><span class="chip online-chip">SIMULATOR ONLINE</span></div>
+        <div class="hangar-layout">
+          <aside class="repair-object"><div class="module-visual"><i></i><b>TOOLS-03</b></div><h2>Модуль разрешений</h2><p>PIX подключил runtime к симулятору. Найди отсутствующую проверку пути.</p><div class="criteria"><span>□ Проверить workspace root</span><span>□ Отклонить traversal</span><span>□ Запустить tests</span></div></aside>
+          <div class="code-station"><div class="station-tabs"><span class="active">tool-handler.ts</span><span>tool-handler.test.ts</span><b>● SIM</b></div><pre><code><em>01</em> export async function readProjectFile(path: string) {
+<em>02</em>   const requested = resolve(WORKSPACE, path);
+<em>03</em>
+<em>04</em>   <mark>// TODO: verify requested path</mark>
+<em>05</em>
+<em>06</em>   return readFile(requested, "utf8");
+<em>07</em> }</code></pre><div class="test-console"><span>SIMULATOR</span><p>✕ rejects path outside workspace</p><p>✓ reads allowed project file</p><button id="run-sim">Запустить симуляцию</button></div></div>
+          <aside class="pix-assistant"><div class="mini-pix"><i></i><b>••</b></div><h3>PIX / DIAGNOSTICS</h3><p id="hangar-hint">Первый тест красный. Могу подсветить направление, но код сначала твой.</p><button data-hint="1">Уровень 1 · вопрос</button><button data-hint="2">Уровень 2 · принцип</button><button data-hint="3">Уровень 3 · схема</button></aside>
+        </div>
+      </section>
+
+      <section class="scene" id="scene-archive">
+        <div class="scene-header"><div><small>ПАМЯТЬ ATLAS</small><h1>Архив экспедиций</h1><p>Источники, версии уроков и доказательства твоих навыков.</p></div><button class="chip">24 стабильных спутника</button></div>
+        <div class="archive-layout">
+          <div class="archive-shelf"><h2>Последние артефакты</h2><article><span>⌬</span><div><b>Безопасный tool handler</b><small>tests 4/4 · mastery evidence</small></div><time>сегодня</time></article><article><span>◫</span><div><b>Карта agent context</b><small>объяснение + перенос</small></div><time>2 дня</time></article><article><span>◇</span><div><b>Первая MCP-схема</b><small>версия 1 · требует обновления</small></div><time>5 дней</time></article></div>
+          <div class="archive-shelf"><h2>Проверенные источники</h2><article><span class="verified-mark">V</span><div><b>Official documentation</b><small>Tier A · проверено сегодня</small></div><time>12 claims</time></article><article><span class="verified-mark">R</span><div><b>Official releases</b><small>Tier A · синхронизировано</small></div><time>8 claims</time></article><article><span class="verified-mark">P</span><div><b>Research watchlist</b><small>Tier B · без production-выводов</small></div><time>4 signals</time></article></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="mobile-dock" aria-label="Мобильная навигация">
+      <button class="active" data-scene="bridge">⌂<span>Мостик</span></button><button data-scene="constellation">✦<span>Atlas</span></button><button data-scene="radar">⌁<span>Радар</span></button><button data-scene="hangar">⌗<span>Ангар</span></button>
+    </nav>
+  </div>
+
+  <dialog id="crew-dialog"><form method="dialog"><button class="dialog-close" value="close">×</button><small>ЭКИПАЖ ODYSSEY</small><h2>Навигатор Gento</h2><p>Текущая цель: уверенно управлять AI-разработкой и проверять результат.</p><div class="crew-list"><span><i class="kora-dot"></i><b>KORA</b><small>навигация и обучение</small></span><span><i class="pix-dot"></i><b>PIX</b><small>практика и debugging</small></span><span><i class="vega-dot"></i><b>VEGA</b><small>источники и сигналы</small></span></div><button class="launch-button" value="close"><span>Вернуться на мостик</span></button></form></dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

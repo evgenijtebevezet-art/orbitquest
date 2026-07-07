@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+.obsidian/workspace*.json
+.obsidian/cache
+data/*.db
+data/*.db-*
+data/runtime/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+*.tsbuildinfo
+
