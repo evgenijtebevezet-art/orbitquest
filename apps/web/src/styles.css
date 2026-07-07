@@ -357,3 +357,99 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--cyan); o
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
+
+/* ---------- Пролог ---------- */
+
+.prologue-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-color: var(--bg);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+.prologue-progress {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.prologue-progress i {
+  width: 22px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(126, 193, 226, 0.25);
+}
+
+.prologue-progress i.done { background: var(--cyan); opacity: 0.55; }
+.prologue-progress i.active { background: var(--cyan); }
+
+.prologue-panel {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 640px;
+  padding: 96px 20px calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(180deg, transparent 0%, rgba(4, 9, 20, 0.82) 26%, rgba(4, 9, 20, 0.96) 100%);
+}
+
+.prologue-speaker {
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  background: var(--panel);
+  color: var(--cyan);
+}
+
+.speaker-pix { color: var(--amber); }
+.speaker-vega { color: var(--green); }
+.speaker-atlas, .speaker-system { color: var(--muted); }
+
+.prologue-panel h1 { margin: 0; font-size: 26px; }
+.prologue-panel p { margin: 0; line-height: 1.55; color: #d5e8f5; }
+
+.prologue-panel input {
+  font: inherit;
+  color: inherit;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-solid);
+}
+.prologue-panel input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+.prologue-action {
+  min-height: 52px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  background: linear-gradient(120deg, var(--cyan), #37b4ff);
+  color: #04121f;
+}
+
+.prologue-skip {
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 13px;
+}
