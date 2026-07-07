@@ -4,6 +4,7 @@ import { loadProfile, saveProfile } from "../profile/storage";
 import { prologueScenes, prologueArt } from "../content/loader";
 import { advanceScene, skipPrologue } from "../prologue/prologue";
 import { PrologueScreen } from "../prologue/PrologueScreen";
+import { Calibration } from "../diagnostic/Calibration";
 import { App } from "../App";
 
 export type GameStage = "prologue" | "calibration" | "sector" | "main";
@@ -34,19 +35,7 @@ export function Root() {
     );
   }
   if (stage === "calibration" || stage === "sector") {
-    return <CalibrationStagePlaceholder />; // заменяется калибровкой (Task 9)
+    return <Calibration profile={profile} onProfileChange={setProfile} />;
   }
   return <App />;
-}
-
-function CalibrationStagePlaceholder() {
-  return (
-    <div className="prologue-screen">
-      <div className="prologue-panel">
-        <span className="prologue-speaker speaker-kora">KORA</span>
-        <h1>Калибровка готовится</h1>
-        <p>Диагностические системы прогреваются. Возвращайся со следующим обновлением.</p>
-      </div>
-    </div>
-  );
 }
