@@ -1,5 +1,5 @@
 import { createServer, type ServerResponse } from "node:http";
-import { bootstrapResponse } from "./bootstrap.js";
+import { bootstrapResponse } from "./bootstrap.ts";
 
 const port = Number(process.env.PORT ?? 8787);
 
