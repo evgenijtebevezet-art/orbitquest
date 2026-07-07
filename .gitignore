@@ -13,3 +13,5 @@ dist/
 *.tsbuildinfo
 
 .memos/
+apps/web/vite.config.js
+apps/web/vite.config.d.ts
