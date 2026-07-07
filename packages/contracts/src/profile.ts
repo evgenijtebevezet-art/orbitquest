@@ -98,7 +98,7 @@ export function parseProfile(
   if (version > PROFILE_VERSION) {
     return {
       ok: false,
-      error: `Профиль создан более новой версией OrbitQuest (v${version}, приложение v${PROFILE_VERSION}). Обнови приложение.`,
+      error: `Профиль новее приложения (профиль v${version}, приложение v${PROFILE_VERSION}). Обнови приложение.`,
     };
   }
   for (let v = version; v < PROFILE_VERSION; v += 1) {
