@@ -32,6 +32,12 @@ const bundle = await readFile(resolve(web, "dist/index.html"), "utf8");
 assert.match(bundle, /<div id="root"><\/div>/);
 await stat(resolve(web, "dist/sw.js"));
 
+const contentIndex = JSON.parse(await readFile(resolve(root, "content/index.json"), "utf8"));
+const storageSource = await readFile(resolve(web, "src/profile/storage.ts"), "utf8");
+const versionMatch = storageSource.match(/APP_CONTENT_VERSION = "([^"]+)"/);
+assert.ok(versionMatch, "APP_CONTENT_VERSION present in storage.ts");
+assert.equal(versionMatch[1], contentIndex.contentVersion, "APP_CONTENT_VERSION must match content/index.json");
+
 const sources = await Promise.all([
   readFile(resolve(web, "src/App.tsx"), "utf8"),
   readFile(resolve(root, "apps/api/src/server.ts"), "utf8"),
