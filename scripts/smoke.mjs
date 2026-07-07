@@ -7,11 +7,26 @@ const web = resolve(root, "apps/web");
 
 const manifest = JSON.parse(await readFile(resolve(web, "public/manifest.webmanifest"), "utf8"));
 assert.equal(manifest.display, "standalone");
-assert.equal(manifest.start_url, "/");
+assert.equal(manifest.start_url, "./");
+assert.ok(manifest.icons.every((icon) => icon.src.startsWith("./")), "icons must be relative");
 
 const index = await readFile(resolve(web, "index.html"), "utf8");
 assert.match(index, /manifest\.webmanifest/);
 assert.match(index, /viewport-fit=cover/);
+assert.doesNotMatch(index, /(href|src)="\/(?!\/)/, "no root-absolute paths in index.html");
+
+const sw = await readFile(resolve(web, "public/sw.js"), "utf8");
+const shellMatch = sw.match(/const SHELL = \[([^\]]+)\]/);
+assert.ok(shellMatch, "SHELL list present in sw.js");
+const shellEntries = [...shellMatch[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+assert.ok(
+  shellEntries.length >= 3 && shellEntries.every((entry) => entry.startsWith("./")),
+  "SHELL entries must be relative",
+);
+assert.doesNotMatch(sw, /caches\.match\("\/"\)/, "offline fallback must be relative");
+
+const viteConfig = await readFile(resolve(web, "vite.config.ts"), "utf8");
+assert.match(viteConfig, /base:\s*"\.\/"/);
 
 const bundle = await readFile(resolve(web, "dist/index.html"), "utf8");
 assert.match(bundle, /<div id="root"><\/div>/);

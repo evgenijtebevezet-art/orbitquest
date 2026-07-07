@@ -25,6 +25,7 @@ export const offlineBootstrap: BootstrapResponse = {
 };
 
 export async function loadBootstrap(signal?: AbortSignal): Promise<BootstrapResponse> {
+  if (!import.meta.env.DEV) return offlineBootstrap;
   const response = await fetch("/api/bootstrap", { signal });
   if (!response.ok) throw new Error(`Bootstrap failed: ${response.status}`);
 

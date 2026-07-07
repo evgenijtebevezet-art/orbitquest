@@ -2,14 +2,14 @@
   "name": "OrbitQuest",
   "short_name": "OrbitQuest",
   "description": "Живая космическая игра для актуализации инженерных навыков.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#050915",
   "theme_color": "#07101f",
   "orientation": "any",
   "icons": [
     {
-      "src": "/orbitquest-icon.svg",
+      "src": "./orbitquest-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
