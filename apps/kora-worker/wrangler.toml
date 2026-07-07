@@ -7,7 +7,7 @@ binding = "LIMITS"
 id = "REPLACE_AFTER_wrangler_kv_namespace_create_LIMITS"
 
 [vars]
-ALLOWED_ORIGINS = "https://REPLACE_GH_USER.github.io"
+ALLOWED_ORIGINS = "https://evgenijtebevezet-art.github.io"
 DAILY_BUDGET = "200"
 NIM_MODEL = "qwen/qwen3.5-397b-instruct"
 GROQ_MODEL = "llama-3.3-70b-versatile"
