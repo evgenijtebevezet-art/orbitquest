@@ -32,6 +32,10 @@ const bundle = await readFile(resolve(web, "dist/index.html"), "utf8");
 assert.match(bundle, /<div id="root"><\/div>/);
 await stat(resolve(web, "dist/sw.js"));
 
+const precache = JSON.parse(await readFile(resolve(web, "dist/precache.json"), "utf8"));
+assert.ok(Array.isArray(precache) && precache.includes("./index.html"), "precache.json lists index.html");
+assert.ok(precache.every((entry) => entry.startsWith("./")), "precache entries must be relative");
+
 const contentIndex = JSON.parse(await readFile(resolve(root, "content/index.json"), "utf8"));
 const storageSource = await readFile(resolve(web, "src/profile/storage.ts"), "utf8");
 const versionMatch = storageSource.match(/APP_CONTENT_VERSION = "([^"]+)"/);

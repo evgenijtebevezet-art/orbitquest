@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { PrologueScene } from "@orbitquest/contracts";
 
 interface PrologueScreenProps {
@@ -7,9 +7,18 @@ interface PrologueScreenProps {
   sceneIndex: number;
   onAdvance: (name?: string) => void;
   onSkip: () => void;
+  onRestoreFile: (file: File) => void;
 }
 
-export function PrologueScreen({ scenes, art, sceneIndex, onAdvance, onSkip }: PrologueScreenProps) {
+export function PrologueScreen({
+  scenes,
+  art,
+  sceneIndex,
+  onAdvance,
+  onSkip,
+  onRestoreFile,
+}: PrologueScreenProps) {
+  const restoreInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
   const scene = scenes[Math.min(sceneIndex, scenes.length - 1)];
   if (!scene) return null;
@@ -56,6 +65,28 @@ export function PrologueScreen({ scenes, art, sceneIndex, onAdvance, onSkip }: P
         <button type="button" className="prologue-skip" onClick={handleSkip}>
           Пропустить пролог
         </button>
+        {sceneIndex === 0 && (
+          <>
+            <button
+              type="button"
+              className="prologue-skip"
+              onClick={() => restoreInputRef.current?.click()}
+            >
+              У меня есть файл прогресса — восстановить
+            </button>
+            <input
+              ref={restoreInputRef}
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) onRestoreFile(file);
+                event.target.value = "";
+              }}
+            />
+          </>
+        )}
       </div>
     </div>
   );

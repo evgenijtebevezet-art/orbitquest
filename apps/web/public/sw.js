@@ -2,7 +2,14 @@ const CACHE = "orbitquest-shell-v2";
 const SHELL = ["./", "./manifest.webmanifest", "./orbitquest-icon.svg"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
+  event.waitUntil(
+    caches.open(CACHE).then((cache) =>
+      fetch("./precache.json")
+        .then((response) => response.json())
+        .then((files) => cache.addAll(files))
+        .catch(() => cache.addAll(SHELL)),
+    ),
+  );
   self.skipWaiting();
 });
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Profile } from "@orbitquest/contracts";
-import { loadProfile, saveProfile } from "../profile/storage";
+import { importProfile, loadProfile, saveProfile } from "../profile/storage";
 import { prologueScenes, prologueArt } from "../content/loader";
 import { advanceScene, skipPrologue } from "../prologue/prologue";
 import { PrologueScreen } from "../prologue/PrologueScreen";
@@ -23,6 +23,20 @@ export function Root() {
   }, [profile]);
   const stage = gameStage(profile);
 
+  function restoreFromFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = importProfile(String(reader.result));
+      if (!parsed.ok) {
+        window.alert(parsed.error);
+        return;
+      }
+      if (!window.confirm("Восстановить прогресс из файла? Текущее состояние будет заменено.")) return;
+      setProfile(parsed.profile);
+    };
+    reader.readAsText(file);
+  }
+
   if (stage === "prologue") {
     return (
       <PrologueScreen
@@ -31,6 +45,7 @@ export function Root() {
         sceneIndex={profile.prologueSceneIndex}
         onAdvance={(name?: string) => setProfile((p) => advanceScene(p, prologueScenes.length, name))}
         onSkip={() => setProfile(skipPrologue)}
+        onRestoreFile={restoreFromFile}
       />
     );
   }
