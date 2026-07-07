@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { isBootstrapResponse } from "@orbitquest/contracts";
-import { bootstrapResponse } from "./bootstrap.js";
+import { bootstrapResponse } from "./bootstrap.ts";
 
 test("bootstrap fixture satisfies the shared contract", () => {
   assert.equal(isBootstrapResponse(bootstrapResponse), true);

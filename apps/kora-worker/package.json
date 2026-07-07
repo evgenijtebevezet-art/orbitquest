@@ -1,0 +1,10 @@
+{
+  "name": "@orbitquest/kora-worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test --experimental-strip-types src/**/*.test.ts",
+    "build:context": "node scripts/build-context.mjs"
+  }
+}
