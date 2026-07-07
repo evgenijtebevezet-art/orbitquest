@@ -570,3 +570,208 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--cyan); o
   letter-spacing: 0.08em;
   color: var(--green);
 }
+
+/* ---------- Плеер миссии ---------- */
+
+.mission-player {
+  min-height: 100dvh;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: calc(14px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mission-player-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.mission-player-head small { display: block; color: var(--muted); letter-spacing: 0.08em; }
+.mission-player-head b { font-size: 17px; }
+
+.exit-button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.mission-phase { display: flex; flex-direction: column; gap: 14px; }
+.mission-phase h1 { margin: 0; font-size: 21px; line-height: 1.35; }
+
+.mission-why {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--green);
+  border-radius: 0 10px 10px 0;
+  background: rgba(109, 247, 189, 0.06);
+  line-height: 1.55;
+}
+
+.kora-brief {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.kora-brief p { margin: 0; line-height: 1.55; color: #d5e8f5; }
+
+.task-progress small { color: var(--muted); letter-spacing: 0.06em; }
+
+.diff-label { color: var(--muted); }
+
+.feedback-block { display: flex; flex-direction: column; gap: 12px; }
+
+.pix-note, .kora-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.pix-note b { color: var(--amber); font-size: 13px; letter-spacing: 0.1em; }
+.pix-note p, .kora-hint p { margin: 0; line-height: 1.5; }
+.kora-hint b { color: var(--cyan); font-size: 13px; letter-spacing: 0.1em; }
+
+.verdict {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+.verdict.pass { background: rgba(109, 247, 189, 0.1); color: var(--green); border: 1px solid rgba(109, 247, 189, 0.35); }
+.verdict.fail { background: rgba(255, 184, 77, 0.08); color: var(--amber); border: 1px solid rgba(255, 184, 77, 0.3); }
+
+.muted-note { color: var(--muted); margin: 0; line-height: 1.5; }
+
+.order-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.order-list li {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.order-line {
+  flex: 1;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #060d1d;
+  overflow-x: auto;
+}
+.order-line code { font-family: "JetBrains Mono", Consolas, monospace; white-space: pre; }
+.order-controls { display: flex; flex-direction: column; gap: 4px; }
+.order-controls button {
+  min-width: 44px;
+  flex: 1;
+  min-height: 22px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+}
+.order-controls button:disabled { opacity: 0.35; cursor: default; }
+
+.find-line-list { display: flex; flex-direction: column; gap: 6px; }
+.find-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  text-align: left;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #060d1d;
+  cursor: pointer;
+}
+.find-line:disabled { opacity: 0.6; cursor: default; }
+.find-line .line-no { color: var(--muted); min-width: 20px; font-size: 13px; }
+.find-line pre { margin: 0; overflow-x: auto; }
+.find-line code { font-family: "JetBrains Mono", Consolas, monospace; white-space: pre; }
+
+/* ---------- Мостик v2 / Профиль / Atlas ---------- */
+
+.bridge-view-v2, .profile-view { display: flex; flex-direction: column; gap: 16px; }
+
+.mission-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.recommended-card { border-color: rgba(85, 231, 255, 0.4); }
+.mission-card header { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; letter-spacing: 0.1em; }
+.mission-card h2 { margin: 0; font-size: 19px; }
+.mission-card p { margin: 0; line-height: 1.55; color: #d5e8f5; }
+
+.mission-list { display: flex; flex-direction: column; gap: 8px; }
+.mission-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 14px;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+}
+.mission-row small { color: var(--muted); text-align: right; }
+.mission-row.status-completed b { color: var(--green); }
+.mission-row.status-review b { color: var(--amber); }
+.mission-row.status-skipped { opacity: 0.65; }
+
+.sector-switch {
+  min-height: 48px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--line);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.profile-actions { display: flex; flex-direction: column; gap: 10px; max-width: 480px; }
+.import-error { margin: 0; color: var(--danger); }
+
+.atlas-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.atlas-detail span { color: var(--muted); line-height: 1.4; }
+
+.skill-node.cap-unknown i { background: var(--muted); }
+.skill-node.cap-recognizes i { background: var(--cyan); }
+.skill-node.cap-applies i { background: var(--green); }
+.skill-node.cap-transfers i { background: var(--violet); }

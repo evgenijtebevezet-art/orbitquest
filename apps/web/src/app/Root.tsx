@@ -37,5 +37,5 @@ export function Root() {
   if (stage === "calibration" || stage === "sector") {
     return <Calibration profile={profile} onProfileChange={setProfile} />;
   }
-  return <App />;
+  return <App profile={profile} onProfileChange={setProfile} />;
 }
