@@ -1,0 +1,111 @@
+[
+  {
+    "id": "q1",
+    "skillId": "code.literal",
+    "type": "choose-explanation",
+    "skipsMissionId": "code-01",
+    "prompt": "Что напечатает эта строка Python?",
+    "code": "print(\"2+2\")",
+    "options": [
+      { "id": "a", "label": "Текст 2+2 — машина печатает ровно то, что в кавычках" },
+      { "id": "b", "label": "Число 4 — Python посчитает выражение" },
+      { "id": "c", "label": "Ошибку — так писать нельзя" }
+    ],
+    "answer": "a"
+  },
+  {
+    "id": "q2",
+    "skillId": "code.variables",
+    "type": "predict-output",
+    "skipsMissionId": "code-02",
+    "prompt": "Что напечатает программа?",
+    "code": "x = 7\nx = x + 1\nprint(x)",
+    "options": [
+      { "id": "a", "label": "7" },
+      { "id": "b", "label": "8" },
+      { "id": "c", "label": "x + 1" }
+    ],
+    "answer": "b"
+  },
+  {
+    "id": "q3",
+    "skillId": "code.order",
+    "type": "predict-output",
+    "skipsMissionId": "code-03",
+    "prompt": "В каком порядке появятся строки?",
+    "code": "print(\"конец\")\nprint(\"начало\")",
+    "options": [
+      { "id": "a", "label": "начало, потом конец — по смыслу слов" },
+      { "id": "b", "label": "конец, потом начало — сверху вниз" }
+    ],
+    "answer": "b"
+  },
+  {
+    "id": "q4",
+    "skillId": "code.conditions",
+    "type": "predict-output",
+    "skipsMissionId": "code-04",
+    "prompt": "Что напечатает программа?",
+    "code": "if 3 > 5:\n    print(\"да\")\nprint(\"готово\")",
+    "options": [
+      { "id": "a", "label": "да, потом готово" },
+      { "id": "b", "label": "только готово" },
+      { "id": "c", "label": "ничего" }
+    ],
+    "answer": "b"
+  },
+  {
+    "id": "q5",
+    "skillId": "code.loops",
+    "type": "predict-output",
+    "skipsMissionId": "code-05",
+    "prompt": "Сколько раз напечатается слово?",
+    "code": "for i in range(2):\n    print(\"шаг\")",
+    "options": [
+      { "id": "a", "label": "1 раз" },
+      { "id": "b", "label": "2 раза" },
+      { "id": "c", "label": "3 раза" }
+    ],
+    "answer": "b"
+  },
+  {
+    "id": "q6",
+    "skillId": "code.read-script",
+    "type": "predict-output",
+    "skipsMissionId": "code-06",
+    "prompt": "Что напечатает программа?",
+    "code": "total = 0\nfor n in [5, 20]:\n    if n > 10:\n        total = total + n\nprint(total)",
+    "options": [
+      { "id": "a", "label": "25" },
+      { "id": "b", "label": "20" },
+      { "id": "c", "label": "0" }
+    ],
+    "answer": "b"
+  },
+  {
+    "id": "q7",
+    "skillId": "agent.verification",
+    "type": "choose-explanation",
+    "skipsMissionId": "agent-02",
+    "prompt": "AI-ассистент выдал код и уверенно написал: «Это работает». Что это гарантирует?",
+    "options": [
+      { "id": "a", "label": "Ничего — уверенность модели не связана с правильностью" },
+      { "id": "b", "label": "Код рабочий — модель проверила его перед ответом" },
+      { "id": "c", "label": "Код рабочий, если модель современная" }
+    ],
+    "answer": "a"
+  },
+  {
+    "id": "q8",
+    "skillId": "agent.permissions",
+    "type": "choose-explanation",
+    "skipsMissionId": "agent-03",
+    "prompt": "AI-агенту нужен доступ к твоим файлам, чтобы ответить на вопрос о них. Какой доступ безопаснее выдать?",
+    "options": [
+      { "id": "a", "label": "Только чтение — прочитать может, изменить или удалить нет" },
+      { "id": "b", "label": "Полный — иначе агент не разберётся" },
+      { "id": "c", "label": "Никакой разницы — доступ есть доступ" }
+    ],
+    "answer": "a"
+  }
+]
