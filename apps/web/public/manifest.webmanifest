@@ -4,8 +4,8 @@
   "description": "Живая космическая игра для актуализации инженерных навыков.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#050915",
-  "theme_color": "#07101f",
+  "background_color": "#141028",
+  "theme_color": "#0d0a1c",
   "orientation": "any",
   "icons": [
     {
