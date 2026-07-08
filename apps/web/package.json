@@ -10,6 +10,9 @@
     "test": "node --test --experimental-strip-types src/**/*.test.ts"
   },
   "dependencies": {
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/rubik": "^5.2.8",
+    "@fontsource/unbounded": "^5.2.8",
     "@orbitquest/contracts": "0.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
