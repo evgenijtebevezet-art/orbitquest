@@ -10,6 +10,7 @@ export type Capability = (typeof capabilityLevels)[number];
 export const taskTypes = [
   "choose-explanation",
   "predict-output",
+  "predict-output-write", // впиши вывод сам (retrieval, без вариантов)
   "order-steps",
   "find-error-line",
   "spot-diff",
@@ -40,7 +41,8 @@ export interface MissionTask {
   redTest: string; // реплика PIX при ошибке (факт, без осуждения)
   explain: string; // разбор (после исчерпания попыток и после верного ответа)
   interlude?: CrewLine[]; // 1–2 реплики экипажа после решения задания
-  proof?: boolean; // финальное задание-доказательство
+  proof?: boolean; // задание-доказательство (последнее обязательное)
+  bonus?: boolean; // опциональное испытание KORA после proof; чистое решение → «владеешь»
 }
 
 export interface Mission {
@@ -162,6 +164,9 @@ export function validateTask(value: unknown, path: string): string[] {
     pushIf(errors, !isPermutation, `${path}.initialOrder: must be a permutation of 0..${lines.length - 1}`);
     const isIdentity = order.length > 0 && order.every((v, i) => v === i);
     pushIf(errors, isIdentity, `${path}.initialOrder: must actually shuffle`);
+  } else if (t?.type === "predict-output-write") {
+    pushIf(errors, !isNonEmptyString(t?.code), `${path}.code: required`);
+    pushIf(errors, !isNonEmptyString(t?.answer), `${path}.answer: expected output required`);
   } else if (t?.type === "find-error-line") {
     pushIf(errors, !isNonEmptyString(t?.code), `${path}.code: required`);
     const lineCount = (t?.code ?? "").split("\n").length;
@@ -213,13 +218,20 @@ export function validateMission(value: unknown): string[] {
   pushIf(errors, !isNonEmptyString(m.koraFallback), "koraFallback: required");
 
   const tasks = Array.isArray(m.tasks) ? m.tasks : [];
-  pushIf(errors, tasks.length < 1 || tasks.length > 5, "tasks: 1..5 required");
+  pushIf(errors, tasks.length < 1 || tasks.length > 6, "tasks: 1..6 required");
   pushIf(errors, new Set(tasks.map((t) => t?.id)).size !== tasks.length, "tasks: duplicate ids");
-  const proofIndexes = tasks.flatMap((t, i) => (t?.proof ? [i] : []));
+  const bonusIndexes = tasks.flatMap((t, i) => (t?.bonus ? [i] : []));
   pushIf(
     errors,
-    proofIndexes.length > 1 || (proofIndexes.length === 1 && proofIndexes[0] !== tasks.length - 1),
-    "tasks: proof task must be single and last",
+    bonusIndexes.length > 1 || (bonusIndexes.length === 1 && bonusIndexes[0] !== tasks.length - 1),
+    "tasks: bonus task must be single and last",
+  );
+  const required = tasks.filter((t) => !t?.bonus);
+  const proofIndexes = required.flatMap((t, i) => (t?.proof ? [i] : []));
+  pushIf(
+    errors,
+    proofIndexes.length > 1 || (proofIndexes.length === 1 && proofIndexes[0] !== required.length - 1),
+    "tasks: proof task must be single and last among required tasks",
   );
   tasks.forEach((task, index) => errors.push(...validateTask(task, `tasks[${index}]`)));
   return errors;

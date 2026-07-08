@@ -21,7 +21,8 @@ export type EngineEvent =
   | { type: "answer"; key: string }
   | { type: "retry" }
   | { type: "hint" }
-  | { type: "next" };
+  | { type: "next" }
+  | { type: "skip-bonus" };
 
 const MAX_ATTEMPTS = 3; // первая попытка + две повторные
 
@@ -37,10 +38,22 @@ export function initialEngineState(): EngineState {
   };
 }
 
+function normalizeOutput(value: string): string {
+  return value
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim().replace(/\s+/g, " "))
+    .filter((line) => line.length > 0)
+    .join("\n");
+}
+
 export function checkAnswer(task: MissionTask, key: string): boolean {
   if (task.type === "order-steps") {
     const identity = (task.lines ?? []).map((_, index) => index).join(",");
     return key === identity;
+  }
+  if (task.type === "predict-output-write") {
+    return normalizeOutput(key) === normalizeOutput(task.answer);
   }
   return key === task.answer;
 }
@@ -109,6 +122,11 @@ export function engineReducer(
         resolvedCorrect: false,
       };
     }
+    case "skip-bonus": {
+      // отказ от испытания KORA — миссия завершается без бонусных попыток
+      if (state.phase !== "task" || !mission.tasks[state.taskIndex]?.bonus) return state;
+      return { ...state, phase: "result" };
+    }
   }
 }
 
@@ -137,7 +155,13 @@ export function applyMissionResult(
 
 const rank: Record<Capability, number> = { unknown: 0, recognizes: 1, applies: 2, transfers: 3 };
 
-const applyTypes = new Set(["predict-output", "order-steps", "find-error-line", "spot-diff"]);
+const applyTypes = new Set([
+  "predict-output",
+  "predict-output-write",
+  "order-steps",
+  "find-error-line",
+  "spot-diff",
+]);
 
 export function deriveCapabilities(
   profile: Profile,
@@ -156,7 +180,8 @@ export function deriveCapabilities(
       const task = tasksById.get(attempt.taskId);
       if (!task) continue;
       let cap: Capability = "unknown";
-      if (task.type === "choose-explanation") cap = "recognizes";
+      if (task.bonus) cap = "transfers"; // испытание KORA = перенос в усложнённый контекст
+      else if (task.type === "choose-explanation") cap = "recognizes";
       else if (applyTypes.has(task.type)) cap = mission.contextTag === "new" ? "transfers" : "applies";
       if (rank[cap] > rank[capabilities[mission.skillId] ?? "unknown"]) {
         capabilities[mission.skillId] = cap;
