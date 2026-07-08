@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { MotionConfig } from "motion/react";
 import { Root } from "./app/Root";
 import "@fontsource/rubik/cyrillic-400.css";
 import "@fontsource/rubik/cyrillic-500.css";
@@ -17,7 +18,9 @@ import "./styles.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Root />
+    <MotionConfig reducedMotion="user">
+      <Root />
+    </MotionConfig>
   </StrictMode>,
 );
 

@@ -16,10 +16,10 @@ export const skillNames: Record<string, string> = {
 };
 
 export const capNames: Record<Capability, string> = {
-  unknown: "не проверено",
-  recognizes: "узнаёт",
-  applies: "применяет",
-  transfers: "переносит",
+  unknown: "ещё не изучено",
+  recognizes: "узнал идею",
+  applies: "умеешь читать",
+  transfers: "владеешь",
 };
 
 export const sectorNames: Record<SectorId, string> = {

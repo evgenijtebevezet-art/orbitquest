@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
+import { motion } from "motion/react";
 import type { AttemptRecord, Mission, Profile, SectorId } from "@orbitquest/contracts";
-import { contentIndex, missionsById } from "./content/loader";
+import { characterArt, contentIndex, missionsById } from "./content/loader";
 import { applyMissionResult, missionAvailability, recommendMission } from "./missions/engine";
 import { MissionPlayer } from "./missions/MissionPlayer";
 import { AtlasMap } from "./atlas/AtlasMap";
@@ -9,13 +10,26 @@ import { exportProfile, importProfile } from "./profile/storage";
 
 type DeckId = "bridge" | "atlas" | "profile";
 
-const decks: Array<{ id: DeckId; icon: string; label: string }> = [
-  { id: "bridge", icon: "⌂", label: "Мостик" },
-  { id: "atlas", icon: "✦", label: "Atlas" },
+const allDecks: Array<{ id: DeckId; icon: string; label: string }> = [
+  { id: "bridge", icon: "⌂", label: "Играть" },
+  { id: "atlas", icon: "✦", label: "Карта навыков" },
   { id: "profile", icon: "⌗", label: "Профиль" },
 ];
 
 const SHIP = { name: "Odyssey", registry: "NQ-07" };
+
+const availabilityLabels = {
+  new: "не начата",
+  skipped: "уже знаешь — можно пропустить",
+  completed: "пройдена ✓",
+  review: "пора освежить",
+} as const;
+
+function countCompleted(profile: Profile): number {
+  return Object.values(profile.missions).filter(
+    (record) => record.status === "completed" && missionsById[record.missionId],
+  ).length;
+}
 
 interface AppProps {
   profile: Profile;
@@ -23,11 +37,17 @@ interface AppProps {
 }
 
 export function App({ profile, onProfileChange }: AppProps) {
-  const [activeDeck, setActiveDeck] = useState<DeckId>("bridge");
-  const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
-
   const sector: SectorId = profile.sector ?? "code";
   const order = contentIndex.missionOrder[sector];
+  const completedTotal = countCompleted(profile);
+
+  const [activeDeck, setActiveDeck] = useState<DeckId>("bridge");
+  // первый заход после калибровки — сразу в миссию дня, без экранов-посредников
+  const [activeMissionId, setActiveMissionId] = useState<string | null>(() =>
+    completedTotal === 0 ? recommendMission(profile, order, missionsById, new Date()) : null,
+  );
+
+  const decks = completedTotal >= 1 ? allDecks : allDecks.slice(0, 1);
   const activeMission = activeMissionId ? missionsById[activeMissionId] : undefined;
 
   function handleComplete(mission: Mission) {
@@ -62,13 +82,13 @@ export function App({ profile, onProfileChange }: AppProps) {
             {SHIP.name} · {SHIP.registry}
           </small>
           <strong>
-            <i /> СЕКТОР: {sectorNames[sector].toUpperCase()}
+            <i /> КУРС: {sectorNames[sector].toUpperCase()}
           </strong>
         </div>
       </header>
 
-      <aside className="rail" aria-label="Палубы Odyssey">
-        <span className="rail-title">ПАЛУБЫ</span>
+      <aside className="rail" aria-label="Разделы">
+        <span className="rail-title">РАЗДЕЛЫ</span>
         {decks.map((deck, index) => (
           <button
             key={deck.id}
@@ -85,7 +105,7 @@ export function App({ profile, onProfileChange }: AppProps) {
           <span>{(profile.navigatorName || "НВ").slice(0, 2).toUpperCase()}</span>
           <div>
             <b>Навигатор {profile.navigatorName || "без имени"}</b>
-            <small>маршрут: Освоение</small>
+            <small>курс: {sectorNames[sector]}</small>
           </div>
         </div>
       </aside>
@@ -96,6 +116,7 @@ export function App({ profile, onProfileChange }: AppProps) {
             profile={profile}
             sector={sector}
             order={order}
+            completedTotal={completedTotal}
             onStartMission={setActiveMissionId}
             onSwitchSector={(next) => onProfileChange((p) => ({ ...p, sector: next }))}
           />
@@ -112,19 +133,21 @@ export function App({ profile, onProfileChange }: AppProps) {
         {activeDeck === "profile" && <ProfileDeck profile={profile} onProfileChange={onProfileChange} />}
       </main>
 
-      <nav className="mobile-dock" aria-label="Основная навигация">
-        {decks.map((deck) => (
-          <button
-            key={deck.id}
-            type="button"
-            className={activeDeck === deck.id ? "active" : ""}
-            onClick={() => setActiveDeck(deck.id)}
-          >
-            <span>{deck.icon}</span>
-            <small>{deck.label}</small>
-          </button>
-        ))}
-      </nav>
+      {decks.length > 1 && (
+        <nav className="mobile-dock" aria-label="Основная навигация">
+          {decks.map((deck) => (
+            <button
+              key={deck.id}
+              type="button"
+              className={activeDeck === deck.id ? "active" : ""}
+              onClick={() => setActiveDeck(deck.id)}
+            >
+              <span>{deck.icon}</span>
+              <small>{deck.label}</small>
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }
@@ -133,15 +156,16 @@ interface BridgeProps {
   profile: Profile;
   sector: SectorId;
   order: string[];
+  completedTotal: number;
   onStartMission: (missionId: string) => void;
   onSwitchSector: (sector: SectorId) => void;
 }
 
-function Bridge({ profile, sector, order, onStartMission, onSwitchSector }: BridgeProps) {
+function Bridge({ profile, sector, order, completedTotal, onStartMission, onSwitchSector }: BridgeProps) {
   const today = new Date();
   const recommendedId = recommendMission(profile, order, missionsById, today);
   const recommended = recommendedId ? missionsById[recommendedId] : undefined;
-  const completedCount = order.filter(
+  const completedInSector = order.filter(
     (id) => missionAvailability(profile, id, today) === "completed",
   ).length;
   const otherSector: SectorId = sector === "code" ? "agent" : "code";
@@ -150,66 +174,77 @@ function Bridge({ profile, sector, order, onStartMission, onSwitchSector }: Brid
     <section className="deck-view bridge-view-v2" aria-labelledby="bridge-title">
       <header className="deck-heading">
         <small>МОСТИК · ГЛАВА 1</small>
-        <h1 id="bridge-title">Сектор «{sectorNames[sector]}»</h1>
+        <h1 id="bridge-title">{sectorNames[sector]}</h1>
         <p>
-          Завершено {completedCount} из {order.length} миссий. Ритм не давит: одна миссия в день —
-          хороший темп, больше — твой выбор.
+          Пройдено {completedInSector} из {order.length} миссий. Одна миссия в день — хороший темп;
+          больше — твой выбор.
         </p>
       </header>
+
+      {completedTotal === 1 && (
+        <motion.div
+          className="kora-note"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {characterArt.kora && <img className="dialog-portrait sm" src={characterArt.kora} alt="KORA" />}
+          <p>
+            <b>KORA:</b> Первый спутник снова в строю — палуба навигации проснулась. Внизу появилась
+            «Карта навыков»: там видно, что уже доказано делом.
+          </p>
+        </motion.div>
+      )}
 
       {recommended ? (
         <article className="mission-card recommended-card">
           <header>
-            <span>РЕКОМЕНДОВАННАЯ МИССИЯ</span>
+            <span>МИССИЯ НА СЕГОДНЯ</span>
             <small>≈ {recommended.durationMinutes} мин</small>
           </header>
           <h2>
-            {recommended.satelliteId} · {recommended.title}
+            {recommended.title}
+            <small className="mission-code"> · {recommended.satelliteId}</small>
           </h2>
           <p>{recommended.why}</p>
           <button type="button" className="prologue-action" onClick={() => onStartMission(recommended.id)}>
-            {missionAvailability(profile, recommended.id, today) === "review"
-              ? "Повторить в новом заходе"
-              : "Принять миссию"}
+            {missionAvailability(profile, recommended.id, today) === "review" ? "Освежить" : "Играть"}
           </button>
         </article>
       ) : (
         <article className="mission-card">
           <h2>Глава пройдена</h2>
           <p>
-            Все миссии сектора завершены, повторения ещё не созрели. Можно переключить сектор или
-            вернуться позже.
+            Все миссии курса пройдены, повторения ещё не созрели. Можно сменить курс или вернуться
+            позже.
           </p>
         </article>
       )}
 
-      <div className="mission-list">
-        {order.map((missionId) => {
-          const mission = missionsById[missionId];
-          if (!mission) return null;
-          const availability = missionAvailability(profile, missionId, today);
-          return (
-            <button
-              key={missionId}
-              type="button"
-              className={`mission-row status-${availability}`}
-              onClick={() => onStartMission(missionId)}
-            >
-              <b>{mission.satelliteId}</b>
-              <span>{mission.title}</span>
-              <small>
-                {availability === "new" && "доступна"}
-                {availability === "skipped" && "пропущена калибровкой"}
-                {availability === "completed" && "завершена ✓"}
-                {availability === "review" && "пора повторить"}
-              </small>
-            </button>
-          );
-        })}
-      </div>
+      <details className="mission-details">
+        <summary>Все миссии главы</summary>
+        <div className="mission-list">
+          {order.map((missionId) => {
+            const mission = missionsById[missionId];
+            if (!mission) return null;
+            const availability = missionAvailability(profile, missionId, today);
+            return (
+              <button
+                key={missionId}
+                type="button"
+                className={`mission-row status-${availability}`}
+                onClick={() => onStartMission(missionId)}
+              >
+                <b>{mission.satelliteId}</b>
+                <span>{mission.title}</span>
+                <small>{availabilityLabels[availability]}</small>
+              </button>
+            );
+          })}
+        </div>
+      </details>
 
       <button type="button" className="sector-switch" onClick={() => onSwitchSector(otherSector)}>
-        Переключиться на сектор «{sectorNames[otherSector]}» — прогресс сохраняется раздельно
+        Сменить курс: «{sectorNames[otherSector]}» — прогресс хранится отдельно
       </button>
     </section>
   );
@@ -268,16 +303,16 @@ function ProfileDeck({
         <small>ЛИЧНЫЙ ОТСЕК</small>
         <h1>Навигатор {profile.navigatorName || "без имени"}</h1>
         <p>
-          Прогресс хранится только на этом устройстве (профиль v{profile.profileVersion}, контент{" "}
-          {profile.contentVersion}). Экспортируй файл, чтобы не потерять его или перенести.
+          Прогресс хранится только на этом устройстве. Экспортируй файл, чтобы не потерять его или
+          перенести на другой телефон.
         </p>
       </header>
       <div className="profile-actions">
         <button type="button" className="prologue-action" onClick={handleExport}>
-          Экспортировать прогресс в файл
+          Сохранить прогресс в файл
         </button>
         <button type="button" className="option" onClick={() => fileInputRef.current?.click()}>
-          Импортировать из файла (заменит текущий прогресс)
+          Загрузить из файла (заменит текущий прогресс)
         </button>
         <input
           ref={fileInputRef}
