@@ -31,3 +31,16 @@ export const prologueArt: Record<string, string> = Object.fromEntries(
     url as string,
   ]),
 );
+
+const characterModules = import.meta.glob("../assets/characters/*.webp", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+// ключи: kora | pix | vega
+export const characterArt: Record<string, string> = Object.fromEntries(
+  Object.entries(characterModules).map(([path, url]) => [
+    path.split("/").pop()!.replace(".webp", ""),
+    url as string,
+  ]),
+);

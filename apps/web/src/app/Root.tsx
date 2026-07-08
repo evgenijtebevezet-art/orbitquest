@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Profile } from "@orbitquest/contracts";
 import { importProfile, loadProfile, saveProfile } from "../profile/storage";
-import { prologueScenes, prologueArt } from "../content/loader";
+import { prologueScenes, prologueArt, characterArt } from "../content/loader";
 import { advanceScene, skipPrologue } from "../prologue/prologue";
 import { PrologueScreen } from "../prologue/PrologueScreen";
 import { Calibration } from "../diagnostic/Calibration";
@@ -42,6 +42,7 @@ export function Root() {
       <PrologueScreen
         scenes={prologueScenes}
         art={prologueArt}
+        portraits={characterArt}
         sceneIndex={profile.prologueSceneIndex}
         onAdvance={(name?: string) => setProfile((p) => advanceScene(p, prologueScenes.length, name))}
         onSkip={() => setProfile(skipPrologue)}

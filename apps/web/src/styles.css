@@ -795,3 +795,92 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--acid); outl
     transition-duration: 1ms !important;
   }
 }
+
+/* ---------- Story-first: портреты, SFX, раскрытие ---------- */
+
+.prologue-art {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+.prologue-progress { z-index: 12; }
+.prologue-panel { position: relative; z-index: 10; }
+
+.speaker-row { display: flex; align-items: center; gap: 10px; }
+
+.dialog-portrait {
+  width: 64px;
+  height: 64px;
+  border: var(--line-w) solid var(--ink);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--panel-deep);
+  box-shadow: var(--shadow-pop-sm);
+}
+.dialog-portrait.sm { width: 44px; height: 44px; box-shadow: 2px 2px 0 var(--ink); }
+
+.pix-note, .kora-hint, .verdict { position: relative; }
+
+.sfx {
+  position: absolute;
+  top: -16px;
+  right: 8px;
+  z-index: 5;
+  padding: 5px 12px;
+  border: var(--line-w) solid var(--ink);
+  border-radius: 4px 14px 4px 14px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  transform-origin: bottom right;
+  pointer-events: none;
+}
+.sfx-amber { background: var(--amber); color: var(--ink); }
+.sfx-acid { background: var(--acid); color: var(--ink); }
+
+.result-verdict { padding-top: 18px; }
+
+.kora-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: var(--line-w) solid var(--ink);
+  border-radius: var(--radius);
+  background: rgba(82, 229, 255, 0.08);
+  box-shadow: var(--shadow-pop-sm), inset 4px 0 0 var(--cyan);
+}
+.kora-note p { margin: 0; line-height: 1.5; }
+.kora-note b { color: var(--cyan); }
+
+.mission-code { color: var(--muted); font-family: var(--font-body); font-weight: 500; font-size: 12px; }
+
+.mission-details { border: 0; }
+.mission-details summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: var(--line-w) solid var(--ink);
+  border-radius: 12px;
+  background: var(--panel-deep);
+  box-shadow: var(--shadow-pop-sm);
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+}
+.mission-details summary::-webkit-details-marker { display: none; }
+.mission-details summary::after { content: "▸"; margin-left: auto; color: var(--acid); transition: transform 150ms ease; }
+.mission-details[open] summary::after { transform: rotate(90deg); }
+.mission-details .mission-list { margin-top: 10px; }
+
+.skill-node b { font-size: 8px; line-height: 1.25; }
+
+/* анимации въезда не должны создавать горизонтальный скролл */
+html { overflow-x: clip; }
+.prologue-screen { overflow-x: clip; }

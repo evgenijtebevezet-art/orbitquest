@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from "react";
+import { motion } from "motion/react";
 import type { AttemptRecord, Mission, MissionTask } from "@orbitquest/contracts";
 import {
   engineReducer,
@@ -7,6 +8,36 @@ import {
   type EngineState,
 } from "./engine";
 import { askKora } from "../kora/askKora";
+import { characterArt } from "../content/loader";
+
+function Portrait({ who }: { who: "kora" | "pix" }) {
+  const src = characterArt[who];
+  if (!src) return null;
+  return (
+    <motion.img
+      className="dialog-portrait sm"
+      src={src}
+      alt={who.toUpperCase()}
+      initial={{ scale: 0, rotate: -10 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ type: "spring", stiffness: 380, damping: 18 }}
+    />
+  );
+}
+
+function SfxBurst({ text, tone }: { text: string; tone: "amber" | "acid" }) {
+  return (
+    <motion.span
+      className={`sfx sfx-${tone}`}
+      initial={{ scale: 0, rotate: -14, opacity: 0 }}
+      animate={{ scale: [0, 1.3, 1], rotate: [-14, 5, -3], opacity: 1 }}
+      transition={{ duration: 0.45, times: [0, 0.7, 1] }}
+      aria-hidden="true"
+    >
+      {text}
+    </motion.span>
+  );
+}
 
 interface MissionPlayerProps {
   mission: Mission;
@@ -54,9 +85,19 @@ function Briefing({ mission, onBegin }: { mission: Mission; onBegin: () => void 
     <section className="mission-phase">
       <p className="mission-why">{mission.why}</p>
       <div className="kora-brief">
-        <span className="prologue-speaker speaker-kora">KORA</span>
-        {mission.briefing.map((line) => (
-          <p key={line}>{line}</p>
+        <div className="speaker-row">
+          <Portrait who="kora" />
+          <span className="prologue-speaker speaker-kora">KORA</span>
+        </div>
+        {mission.briefing.map((line, index) => (
+          <motion.p
+            key={line}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 + index * 0.3 }}
+          >
+            {line}
+          </motion.p>
         ))}
       </div>
       <AskKoraPanel mission={mission} taskId={null} hintStage={0} enabled />
@@ -152,9 +193,19 @@ function TaskPhase({ mission, state, dispatch }: TaskPhaseProps) {
         <ChoiceTask key={task.id} task={task} disabled={showFeedback} onSubmit={(key) => dispatch({ type: "answer", key })} />
       )}
       {state.taskStatus === "wrong" && (
-        <div className="feedback-block">
+        <motion.div
+          key={`wrong-${state.attempts.length}`}
+          className="feedback-block"
+          initial={{ x: 0 }}
+          animate={{ x: [0, -9, 9, -6, 6, 0] }}
+          transition={{ duration: 0.4 }}
+        >
           <div className="pix-note">
-            <b>PIX</b>
+            <SfxBurst text="БИП-БИП!" tone="amber" />
+            <div className="speaker-row">
+              <Portrait who="pix" />
+              <b>PIX</b>
+            </div>
             <p>{task.redTest}</p>
           </div>
           <div className="kora-hint">
@@ -170,15 +221,24 @@ function TaskPhase({ mission, state, dispatch }: TaskPhaseProps) {
           <button type="button" className="prologue-action" onClick={() => dispatch({ type: "retry" })}>
             Попробовать ещё раз · осталось {state.attemptsLeft}
           </button>
-        </div>
+        </motion.div>
       )}
       {state.taskStatus === "resolved" && (
         <div className="feedback-block">
-          <div className={state.resolvedCorrect ? "verdict pass" : "verdict fail"}>
+          <motion.div
+            className={state.resolvedCorrect ? "verdict pass" : "verdict fail"}
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 16 }}
+          >
+            {state.resolvedCorrect && <SfxBurst text="ОК!" tone="acid" />}
             {state.resolvedCorrect ? "✓ Верно" : "Попытки закончились — разбор ниже"}
-          </div>
+          </motion.div>
           <div className="kora-hint">
-            <b>KORA · разбор</b>
+            <div className="speaker-row">
+              <Portrait who="kora" />
+              <b>KORA · разбор</b>
+            </div>
             <p>{task.explain}</p>
           </div>
           <button type="button" className="prologue-action" onClick={() => dispatch({ type: "next" })}>
@@ -215,16 +275,19 @@ function ChoiceTask({
         </>
       )}
       <div className="option-list">
-        {(task.options ?? []).map((option) => (
-          <button
+        {(task.options ?? []).map((option, index) => (
+          <motion.button
             key={option.id}
             type="button"
             className="option"
             disabled={disabled}
             onClick={() => onSubmit(option.id)}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.08, duration: 0.25 }}
           >
             {option.label}
-          </button>
+          </motion.button>
         ))}
       </div>
     </>
@@ -336,7 +399,15 @@ function ResultPhase({
   ).length;
   return (
     <section className="mission-phase">
-      <div className="verdict pass">Миссия {mission.code} завершена</div>
+      <motion.div
+        className="verdict pass result-verdict"
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 14 }}
+      >
+        <SfxBurst text="СПУТНИК ОНЛАЙН!" tone="acid" />
+        Миссия {mission.code} завершена
+      </motion.div>
       <p>
         Чисто решено заданий: {cleanTasks} из {mission.tasks.length}. Спутник {mission.satelliteId}{" "}
         отвечает; состояние навыка на карте Atlas обновлено по фактическим доказательствам.

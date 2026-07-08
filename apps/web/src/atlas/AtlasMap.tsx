@@ -12,10 +12,10 @@ interface AtlasMapProps {
 }
 
 const availabilityNames: Record<MissionAvailability, string> = {
-  new: "доступна",
-  skipped: "пропущена калибровкой",
-  completed: "завершена",
-  review: "пора повторить",
+  new: "не начата",
+  skipped: "уже знаешь — можно пропустить",
+  completed: "пройдена",
+  review: "пора освежить",
 };
 
 export function AtlasMap({ profile, missionsById, order, sector, onStartMission }: AtlasMapProps) {
@@ -28,9 +28,9 @@ export function AtlasMap({ profile, missionsById, order, sector, onStartMission 
   return (
     <section className="deck-view atlas-view">
       <header className="deck-heading">
-        <small>НАВИГАЦИОННАЯ ПАЛУБА</small>
-        <h1>Созвездие Atlas · {sector === "code" ? "Основы кода" : "AI-кодинг"}</h1>
-        <p>Спутник — это навык. Цвет показывает, что уже доказано попытками без подсказок.</p>
+        <small>НАВИГАЦИОННАЯ ПАЛУБА · СОЗВЕЗДИЕ ATLAS</small>
+        <h1>Карта навыков · {sector === "code" ? "Основы кода" : "AI-кодинг"}</h1>
+        <p>Каждый спутник — один навык. Цвет показывает, что уже доказано ответами без подсказок.</p>
       </header>
       <div className="atlas-map">
         {order.map((missionId, index) => {
@@ -49,7 +49,7 @@ export function AtlasMap({ profile, missionsById, order, sector, onStartMission 
               onClick={() => setSelectedId(missionId)}
             >
               <i />
-              <b>{mission.satelliteId}</b>
+              <b>{skillNames[mission.skillId] ?? mission.title}</b>
               <small>{capNames[cap]}</small>
             </button>
           );
