@@ -37,4 +37,21 @@ try {
   if (error?.code !== "ENOENT") throw error;
   console.warn("assets/characters: none yet, skipped");
 }
+
+// карта путешествия: assets/journey-map.png → 1080px webp (лимит 350KB)
+try {
+  const journeyOut = resolve(import.meta.dirname, "../apps/web/src/assets/journey");
+  await mkdir(journeyOut, { recursive: true });
+  const journeyTarget = resolve(journeyOut, "journey-map.webp");
+  await sharp(resolve(import.meta.dirname, "../assets/journey-map.png"))
+    .resize({ width: 1080, withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toFile(journeyTarget);
+  const { size } = await stat(journeyTarget);
+  console.log(`journey-map.webp ${(size / 1024).toFixed(0)}KB`);
+  if (size > 350 * 1024) throw new Error("journey-map.webp exceeds 350KB");
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+  console.warn("assets/journey-map.png: missing, skipped");
+}
 console.log("art optimized");

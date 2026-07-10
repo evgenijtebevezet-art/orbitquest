@@ -5,6 +5,7 @@ import {
   validateContentIndex,
   validatePrologueScenes,
   validateCalibrationItems,
+  validateJourney,
   validateMission,
 } from "../packages/contracts/src/content.ts";
 
@@ -31,7 +32,8 @@ try {
   else console.warn("content/calibration/items.json: MISSING (pending)");
 }
 
-for (const id of [...index.missionOrder.code, ...index.missionOrder.agent]) {
+const missionIds = [...index.missionOrder.code, ...index.missionOrder.agent];
+for (const id of missionIds) {
   const path = `content/missions/${id}.json`;
   try {
     await access(resolve(root, path));
@@ -42,6 +44,15 @@ for (const id of [...index.missionOrder.code, ...index.missionOrder.agent]) {
     if (strict) failures.push(`${path}: MISSING`);
     else console.warn(`${path}: MISSING (pending)`);
   }
+}
+
+try {
+  await access(resolve(root, "content/journey.json"));
+  await check("content/journey.json", (raw) => validateJourney(raw, missionIds));
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+  if (strict) failures.push("content/journey.json: MISSING");
+  else console.warn("content/journey.json: MISSING (pending)");
 }
 
 if (failures.length) {

@@ -1,9 +1,11 @@
-import type { CalibrationItem, ContentIndex, Mission, PrologueScene } from "@orbitquest/contracts";
+import type { CalibrationItem, ContentIndex, Journey, Mission, PrologueScene } from "@orbitquest/contracts";
 import contentIndexJson from "../../../../content/index.json";
 import prologueScenesJson from "../../../../content/prologue/scenes.json";
+import journeyJson from "../../../../content/journey.json";
 
 export const contentIndex = contentIndexJson as ContentIndex;
 export const prologueScenes = prologueScenesJson as PrologueScene[];
+export const journey = journeyJson as Journey;
 
 const missionModules = import.meta.glob("../../../../content/missions/*.json", {
   eager: true,
