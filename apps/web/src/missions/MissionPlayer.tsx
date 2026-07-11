@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import { motion } from "motion/react";
-import type { AttemptRecord, Mission, MissionTask } from "@orbitquest/contracts";
+import type { AttemptRecord, CrewLine, Mission, MissionTask } from "@orbitquest/contracts";
 import {
   engineReducer,
   initialEngineState,
@@ -10,7 +10,7 @@ import {
 import { askKora } from "../kora/askKora";
 import { characterArt } from "../content/loader";
 
-function Portrait({ who }: { who: "kora" | "pix" }) {
+function Portrait({ who }: { who: "kora" | "pix" | "vega" }) {
   const src = characterArt[who];
   if (!src) return null;
   return (
@@ -39,13 +39,36 @@ function SfxBurst({ text, tone }: { text: string; tone: "amber" | "acid" }) {
   );
 }
 
+function Interlude({ lines }: { lines: CrewLine[] }) {
+  return (
+    <div className="interlude-block">
+      {lines.map((line, index) => (
+        <motion.div
+          key={`${line.speaker}-${index}`}
+          className="interlude-line"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 + index * 0.35 }}
+        >
+          <div className="speaker-row">
+            <Portrait who={line.speaker.toLowerCase() as "kora" | "pix" | "vega"} />
+            <b className={`interlude-speaker speaker-${line.speaker.toLowerCase()}`}>{line.speaker}</b>
+          </div>
+          <p>{line.text}</p>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 interface MissionPlayerProps {
   mission: Mission;
+  emergency?: boolean;
   onExit: () => void;
   onComplete: (attempts: AttemptRecord[]) => void;
 }
 
-export function MissionPlayer({ mission, onExit, onComplete }: MissionPlayerProps) {
+export function MissionPlayer({ mission, emergency = false, onExit, onComplete }: MissionPlayerProps) {
   const [state, dispatch] = useReducer(
     (s: EngineState, e: EngineEvent) => engineReducer(s, e, mission, () => new Date().toISOString()),
     undefined,
@@ -61,10 +84,11 @@ export function MissionPlayer({ mission, onExit, onComplete }: MissionPlayerProp
   }, [state.phase, state.attempts, onComplete]);
 
   return (
-    <div className="mission-player">
-      <header className="mission-player-head">
+    <div className={emergency ? "mission-player emergency" : "mission-player"}>
+      <header className={emergency ? "mission-player-head alert-head" : "mission-player-head"}>
         <div>
           <small>
+            {emergency && <span className="alert-tag">⚠ ТРЕВОГА</span>}
             {mission.code} · {mission.satelliteId}
           </small>
           <b>{mission.title}</b>
@@ -73,21 +97,36 @@ export function MissionPlayer({ mission, onExit, onComplete }: MissionPlayerProp
           ✕
         </button>
       </header>
-      {state.phase === "briefing" && <Briefing mission={mission} onBegin={() => dispatch({ type: "begin" })} />}
+      {state.phase === "briefing" && (
+        <Briefing mission={mission} emergency={emergency} onBegin={() => dispatch({ type: "begin" })} />
+      )}
       {state.phase === "task" && <TaskPhase mission={mission} state={state} dispatch={dispatch} />}
-      {state.phase === "result" && <ResultPhase mission={mission} state={state} onExit={onExit} />}
+      {state.phase === "result" && (
+        <ResultPhase mission={mission} emergency={emergency} state={state} onExit={onExit} />
+      )}
     </div>
   );
 }
 
-function Briefing({ mission, onBegin }: { mission: Mission; onBegin: () => void }) {
+function Briefing({
+  mission,
+  emergency,
+  onBegin,
+}: {
+  mission: Mission;
+  emergency: boolean;
+  onBegin: () => void;
+}) {
+  const requiredCount = mission.tasks.filter((task) => !task.bonus).length;
   return (
     <section className="mission-phase">
       <p className="mission-why">{mission.why}</p>
-      <div className="kora-brief">
+      <div className={emergency ? "kora-brief alert-brief" : "kora-brief"}>
         <div className="speaker-row">
-          <Portrait who="kora" />
-          <span className="prologue-speaker speaker-kora">KORA</span>
+          <Portrait who={emergency ? "pix" : "kora"} />
+          <span className={emergency ? "prologue-speaker speaker-pix" : "prologue-speaker speaker-kora"}>
+            {emergency ? "PIX · ТРЕВОГА" : "KORA"}
+          </span>
         </div>
         {mission.briefing.map((line, index) => (
           <motion.p
@@ -102,7 +141,7 @@ function Briefing({ mission, onBegin }: { mission: Mission; onBegin: () => void 
       </div>
       <AskKoraPanel mission={mission} taskId={null} hintStage={0} enabled />
       <button type="button" className="prologue-action" onClick={onBegin}>
-        Начать миссию · {mission.tasks.length} заданий
+        {emergency ? "К ремонту" : "Начать миссию"} · {requiredCount} заданий
       </button>
     </section>
   );
@@ -173,15 +212,43 @@ interface TaskPhaseProps {
 
 function TaskPhase({ mission, state, dispatch }: TaskPhaseProps) {
   const task = mission.tasks[state.taskIndex];
+  const [bonusAccepted, setBonusAccepted] = useState(false);
+  useEffect(() => setBonusAccepted(false), [task?.id]);
   if (!task) return null;
   const showFeedback = state.taskStatus !== "answering";
+  const requiredCount = mission.tasks.filter((t) => !t.bonus).length;
+
+  // бонус-оффер: испытание KORA можно принять или завершить миссию без него
+  if (task.bonus && !bonusAccepted && state.taskStatus === "answering" && !taskFirstAttemptMade(state, task)) {
+    return (
+      <section className="mission-phase bonus-offer">
+        <div className="speaker-row">
+          <Portrait who="kora" />
+          <span className="prologue-speaker speaker-kora">KORA</span>
+        </div>
+        <h1>Испытание KORA</h1>
+        <p>
+          Обязательная программа выполнена. Есть дополнительное задание — та же тема, но злее:
+          граничный случай, на котором ловят даже уверенных. Чистое решение без подсказок отметит
+          навык как «владеешь».
+        </p>
+        <button type="button" className="prologue-action" onClick={() => setBonusAccepted(true)}>
+          Принять испытание
+        </button>
+        <button type="button" className="option" onClick={() => dispatch({ type: "skip-bonus" })}>
+          Завершить миссию
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section className="mission-phase">
       <header className="task-progress">
         <small>
-          Задание {state.taskIndex + 1} из {mission.tasks.length}
-          {task.proof ? " · доказательство" : ""}
+          {task.bonus
+            ? "Испытание KORA · бонус"
+            : `Задание ${state.taskIndex + 1} из ${requiredCount}${task.proof ? " · доказательство" : ""}`}
         </small>
       </header>
       <h1>{task.prompt}</h1>
@@ -189,6 +256,8 @@ function TaskPhase({ mission, state, dispatch }: TaskPhaseProps) {
         <OrderTask key={task.id} task={task} disabled={showFeedback} onSubmit={(key) => dispatch({ type: "answer", key })} />
       ) : task.type === "find-error-line" ? (
         <FindLineTask key={task.id} task={task} disabled={showFeedback} onSubmit={(key) => dispatch({ type: "answer", key })} />
+      ) : task.type === "predict-output-write" ? (
+        <WriteTask key={task.id} task={task} disabled={showFeedback} onSubmit={(key) => dispatch({ type: "answer", key })} />
       ) : (
         <ChoiceTask key={task.id} task={task} disabled={showFeedback} onSubmit={(key) => dispatch({ type: "answer", key })} />
       )}
@@ -241,6 +310,7 @@ function TaskPhase({ mission, state, dispatch }: TaskPhaseProps) {
             </div>
             <p>{task.explain}</p>
           </div>
+          {task.interlude && <Interlude lines={task.interlude} />}
           <button type="button" className="prologue-action" onClick={() => dispatch({ type: "next" })}>
             {state.taskIndex + 1 >= mission.tasks.length ? "К результату" : "Дальше"}
           </button>
@@ -289,6 +359,54 @@ function ChoiceTask({
             {option.label}
           </motion.button>
         ))}
+      </div>
+    </>
+  );
+}
+
+function WriteTask({
+  task,
+  disabled,
+  onSubmit,
+}: {
+  task: MissionTask;
+  disabled: boolean;
+  onSubmit: (key: string) => void;
+}) {
+  const [value, setValue] = useState("");
+  const numeric = /^-?\d+(?:[.,]\d+)?$/.test(task.answer.trim());
+
+  function submit() {
+    if (disabled || !value.trim()) return;
+    onSubmit(value);
+  }
+
+  return (
+    <>
+      {task.code && (
+        <pre className="code-block">
+          <code>{task.code}</code>
+        </pre>
+      )}
+      <div className="write-task">
+        <input
+          type="text"
+          value={value}
+          inputMode={numeric ? "numeric" : "text"}
+          autoComplete="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          placeholder="Точный вывод программы…"
+          aria-label="Твой ответ"
+          disabled={disabled}
+          onChange={(event) => setValue(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") submit();
+          }}
+        />
+        <button type="button" className="prologue-action" disabled={disabled || !value.trim()} onClick={submit}>
+          Проверить
+        </button>
       </div>
     </>
   );
@@ -387,16 +505,24 @@ function FindLineTask({
 
 function ResultPhase({
   mission,
+  emergency,
   state,
   onExit,
 }: {
   mission: Mission;
+  emergency: boolean;
   state: EngineState;
   onExit: () => void;
 }) {
-  const cleanTasks = mission.tasks.filter((task) =>
+  const required = mission.tasks.filter((task) => !task.bonus);
+  const cleanTasks = required.filter((task) =>
     state.attempts.some((a) => a.taskId === task.id && a.correct && a.hintStage === 0),
   ).length;
+  const bonusTask = mission.tasks.find((task) => task.bonus);
+  const bonusClean = Boolean(
+    bonusTask &&
+      state.attempts.some((a) => a.taskId === bonusTask.id && a.correct && a.hintStage === 0),
+  );
   return (
     <section className="mission-phase">
       <motion.div
@@ -405,21 +531,28 @@ function ResultPhase({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 14 }}
       >
-        <SfxBurst text="СПУТНИК ОНЛАЙН!" tone="acid" />
-        Миссия {mission.code} завершена
+        <SfxBurst text={emergency ? "СИСТЕМА В НОРМЕ!" : "СПУТНИК ОНЛАЙН!"} tone="acid" />
+        {emergency ? `Авария ${mission.code} устранена` : `Миссия ${mission.code} завершена`}
       </motion.div>
       <p>
-        Чисто решено заданий: {cleanTasks} из {mission.tasks.length}. Спутник {mission.satelliteId}{" "}
-        отвечает; состояние навыка на карте Atlas обновлено по фактическим доказательствам.
+        Чисто решено заданий: {cleanTasks} из {required.length}.{" "}
+        {emergency
+          ? "Система корабля снова в строю; карта навыков обновлена по фактическим доказательствам."
+          : `Спутник ${mission.satelliteId} отвечает; состояние навыка на карте обновлено по фактическим доказательствам.`}
       </p>
-      {cleanTasks < mission.tasks.length && (
+      {bonusClean && (
+        <p className="bonus-note">
+          Испытание KORA решено чисто — перенос навыка доказан, отметка «владеешь».
+        </p>
+      )}
+      {cleanTasks < required.length && (
         <p className="muted-note">
           Задания с подсказками не считаются доказательством навыка — тема вернётся в новой миссии
           в другом контексте.
         </p>
       )}
       <button type="button" className="prologue-action" onClick={onExit}>
-        На Мостик
+        К карте
       </button>
     </section>
   );

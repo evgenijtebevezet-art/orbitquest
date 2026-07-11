@@ -4,7 +4,7 @@ const KEY = "orbitquest:profile";
 const BACKUP_KEY = "orbitquest:profile:backup";
 
 // Синхронизировано с content/index.json contentVersion; смок-тест сверяет.
-export const APP_CONTENT_VERSION = "2026.07.08-1";
+export const APP_CONTENT_VERSION = "2026.07.11-1";
 
 export function loadProfile(): Profile {
   const stored = localStorage.getItem(KEY);

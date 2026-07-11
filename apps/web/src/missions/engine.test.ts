@@ -107,6 +107,61 @@ test("three wrong answers resolve task with explain and mission continues", () =
   assert.equal(s.phase, "result");
 });
 
+test("checkAnswer normalizes free-typed output", () => {
+  const writeTask = {
+    ...missionFixture.tasks[0]!,
+    type: "predict-output-write" as const,
+    code: "print(3 + 2)",
+    answer: "5",
+    options: undefined,
+  };
+  assert.equal(checkAnswer(writeTask, "  5  "), true);
+  assert.equal(checkAnswer(writeTask, "5\n"), true);
+  assert.equal(checkAnswer(writeTask, "six"), false);
+  const multiline = { ...writeTask, answer: "один\nтри\nдва" };
+  assert.equal(checkAnswer(multiline, "один \n три \n два"), true);
+});
+
+test("bonus task: skip ends mission, clean solve gives transfers", () => {
+  const bonusMission: Mission = {
+    ...missionFixture,
+    tasks: [
+      missionFixture.tasks[0]!,
+      { ...missionFixture.tasks[1]!, id: "t2" },
+      {
+        ...missionFixture.tasks[0]!,
+        id: "t3",
+        prompt: "Испытание",
+        proof: undefined,
+        bonus: true,
+      },
+    ],
+  };
+  const r = (s: EngineState, e: Parameters<typeof engineReducer>[1]) =>
+    engineReducer(s, e, bonusMission, now);
+  let s = r(initialEngineState(), { type: "begin" });
+  s = r(s, { type: "answer", key: "a" });
+  s = r(s, { type: "next" });
+  s = r(s, { type: "answer", key: "a" });
+  s = r(s, { type: "next" });
+  assert.equal(s.phase, "task"); // бонус предложен
+  const skipped = r(s, { type: "skip-bonus" });
+  assert.equal(skipped.phase, "result");
+
+  s = r(s, { type: "answer", key: "a" });
+  s = r(s, { type: "next" });
+  assert.equal(s.phase, "result");
+
+  const profile = createProfile("v1");
+  profile.missions[bonusMission.id] = {
+    missionId: bonusMission.id,
+    status: "completed",
+    attempts: [{ taskId: "t3", answerKey: "a", correct: true, hintStage: 0, at: now() }],
+  };
+  const caps = deriveCapabilities(profile, { [bonusMission.id]: bonusMission });
+  assert.equal(caps[bonusMission.skillId], "transfers");
+});
+
 test("checkAnswer handles order-steps identity permutation", () => {
   const orderTask = {
     ...missionFixture.tasks[0]!,

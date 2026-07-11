@@ -10,6 +10,7 @@ export type Capability = (typeof capabilityLevels)[number];
 export const taskTypes = [
   "choose-explanation",
   "predict-output",
+  "predict-output-write", // впиши вывод сам (retrieval, без вариантов)
   "order-steps",
   "find-error-line",
   "spot-diff",
@@ -19,6 +20,11 @@ export type TaskType = (typeof taskTypes)[number];
 export interface TaskOption {
   id: string;
   label: string;
+}
+
+export interface CrewLine {
+  speaker: "KORA" | "PIX" | "VEGA";
+  text: string;
 }
 
 export interface MissionTask {
@@ -34,7 +40,9 @@ export interface MissionTask {
   hints: [string, string, string]; // 1 наводящий вопрос, 2 направление, 3 разбор
   redTest: string; // реплика PIX при ошибке (факт, без осуждения)
   explain: string; // разбор (после исчерпания попыток и после верного ответа)
-  proof?: boolean; // финальное задание-доказательство
+  interlude?: CrewLine[]; // 1–2 реплики экипажа после решения задания
+  proof?: boolean; // задание-доказательство (последнее обязательное)
+  bonus?: boolean; // опциональное испытание KORA после proof; чистое решение → «владеешь»
 }
 
 export interface Mission {
@@ -81,6 +89,26 @@ export interface ContentIndex {
   missionOrder: Record<SectorId, string[]>;
 }
 
+export interface JourneyStage {
+  id: string; // "earth-iss"
+  title: string; // «Земля → МКС»
+  from: string;
+  to: string;
+}
+
+export interface JourneyNode {
+  missionId: string;
+  stage: string; // JourneyStage.id
+  x: number; // позиция узла на полотне карты, % (0..100)
+  y: number;
+  kind: "mission" | "emergency";
+}
+
+export interface Journey {
+  stages: JourneyStage[];
+  nodes: JourneyNode[]; // порядок массива = порядок прохождения
+}
+
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
 }
@@ -107,6 +135,25 @@ export function validateTask(value: unknown, path: string): string[] {
   pushIf(errors, !isNonEmptyString(t?.redTest), `${path}.redTest: required`);
   pushIf(errors, !isNonEmptyString(t?.explain), `${path}.explain: required`);
 
+  const interlude = t?.interlude;
+  if (interlude !== undefined) {
+    pushIf(
+      errors,
+      !Array.isArray(interlude) || interlude.length < 1 || interlude.length > 2,
+      `${path}.interlude: 1..2 lines`,
+    );
+    if (Array.isArray(interlude)) {
+      interlude.forEach((line, i) => {
+        pushIf(
+          errors,
+          line?.speaker !== "KORA" && line?.speaker !== "PIX" && line?.speaker !== "VEGA",
+          `${path}.interlude[${i}].speaker: KORA|PIX|VEGA`,
+        );
+        pushIf(errors, !isNonEmptyString(line?.text), `${path}.interlude[${i}].text: required`);
+      });
+    }
+  }
+
   if (t?.type === "order-steps") {
     const lines = t.lines ?? [];
     const order = t.initialOrder ?? [];
@@ -117,6 +164,9 @@ export function validateTask(value: unknown, path: string): string[] {
     pushIf(errors, !isPermutation, `${path}.initialOrder: must be a permutation of 0..${lines.length - 1}`);
     const isIdentity = order.length > 0 && order.every((v, i) => v === i);
     pushIf(errors, isIdentity, `${path}.initialOrder: must actually shuffle`);
+  } else if (t?.type === "predict-output-write") {
+    pushIf(errors, !isNonEmptyString(t?.code), `${path}.code: required`);
+    pushIf(errors, !isNonEmptyString(t?.answer), `${path}.answer: expected output required`);
   } else if (t?.type === "find-error-line") {
     pushIf(errors, !isNonEmptyString(t?.code), `${path}.code: required`);
     const lineCount = (t?.code ?? "").split("\n").length;
@@ -168,13 +218,20 @@ export function validateMission(value: unknown): string[] {
   pushIf(errors, !isNonEmptyString(m.koraFallback), "koraFallback: required");
 
   const tasks = Array.isArray(m.tasks) ? m.tasks : [];
-  pushIf(errors, tasks.length < 1 || tasks.length > 5, "tasks: 1..5 required");
+  pushIf(errors, tasks.length < 1 || tasks.length > 6, "tasks: 1..6 required");
   pushIf(errors, new Set(tasks.map((t) => t?.id)).size !== tasks.length, "tasks: duplicate ids");
-  const proofIndexes = tasks.flatMap((t, i) => (t?.proof ? [i] : []));
+  const bonusIndexes = tasks.flatMap((t, i) => (t?.bonus ? [i] : []));
   pushIf(
     errors,
-    proofIndexes.length > 1 || (proofIndexes.length === 1 && proofIndexes[0] !== tasks.length - 1),
-    "tasks: proof task must be single and last",
+    bonusIndexes.length > 1 || (bonusIndexes.length === 1 && bonusIndexes[0] !== tasks.length - 1),
+    "tasks: bonus task must be single and last",
+  );
+  const required = tasks.filter((t) => !t?.bonus);
+  const proofIndexes = required.flatMap((t, i) => (t?.proof ? [i] : []));
+  pushIf(
+    errors,
+    proofIndexes.length > 1 || (proofIndexes.length === 1 && proofIndexes[0] !== required.length - 1),
+    "tasks: proof task must be single and last among required tasks",
   );
   tasks.forEach((task, index) => errors.push(...validateTask(task, `tasks[${index}]`)));
   return errors;
@@ -194,6 +251,42 @@ export function validateContentIndex(value: unknown): string[] {
     }
     pushIf(errors, new Set(list).size !== list.length, `missionOrder.${sector}: duplicate ids`);
   }
+  return errors;
+}
+
+export function validateJourney(value: unknown, missionIds?: string[]): string[] {
+  const errors: string[] = [];
+  if (!value || typeof value !== "object" || Array.isArray(value)) return ["journey: object required"];
+  const j = value as Partial<Journey>;
+  const stages = Array.isArray(j.stages) ? j.stages : [];
+  const nodes = Array.isArray(j.nodes) ? j.nodes : [];
+  pushIf(errors, stages.length < 1, "stages: >=1 required");
+  pushIf(errors, nodes.length < 1, "nodes: >=1 required");
+  const stageIds = new Set<string>();
+  stages.forEach((stage, i) => {
+    pushIf(errors, !isNonEmptyString(stage?.id), `stages[${i}].id: required`);
+    pushIf(errors, !isNonEmptyString(stage?.title), `stages[${i}].title: required`);
+    pushIf(errors, !isNonEmptyString(stage?.from) || !isNonEmptyString(stage?.to), `stages[${i}].from/to: required`);
+    pushIf(errors, stageIds.has(stage?.id as string), `stages[${i}].id: duplicate`);
+    stageIds.add(stage?.id as string);
+  });
+  const seen = new Set<string>();
+  nodes.forEach((node, i) => {
+    pushIf(errors, !isNonEmptyString(node?.missionId), `nodes[${i}].missionId: required`);
+    pushIf(errors, seen.has(node?.missionId as string), `nodes[${i}].missionId: duplicate`);
+    seen.add(node?.missionId as string);
+    pushIf(errors, !stageIds.has(node?.stage as string), `nodes[${i}].stage: unknown stage`);
+    pushIf(
+      errors,
+      typeof node?.x !== "number" || node.x < 0 || node.x > 100 ||
+        typeof node?.y !== "number" || node.y < 0 || node.y > 100,
+      `nodes[${i}].x/y: percent 0..100`,
+    );
+    pushIf(errors, node?.kind !== "mission" && node?.kind !== "emergency", `nodes[${i}].kind: mission|emergency`);
+    if (missionIds) {
+      pushIf(errors, !missionIds.includes(node?.missionId as string), `nodes[${i}].missionId: no such mission`);
+    }
+  });
   return errors;
 }
 

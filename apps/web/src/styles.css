@@ -884,3 +884,190 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--acid); outl
 /* анимации въезда не должны создавать горизонтальный скролл */
 html { overflow-x: clip; }
 .prologue-screen { overflow-x: clip; }
+
+/* ── Путешествие Odyssey: карта-тропа ─────────────────────────────── */
+
+.journey-view { padding-bottom: 0; }
+
+.journey-wrap { display: flex; flex-direction: column; gap: 12px; }
+
+.journey-canvas {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  border: var(--line-w) solid var(--ink);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-pop);
+  background: var(--panel-deep);
+}
+.journey-art { display: block; width: 100%; height: auto; }
+
+.journey-node {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: var(--line-w) solid var(--ink);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--shadow-pop-sm);
+  font-family: var(--font-display);
+}
+.journey-node .node-face { font-size: 13px; line-height: 1; }
+.journey-node .node-code {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  background: rgba(13, 10, 28, 0.82);
+  border-radius: 6px;
+  padding: 2px 5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.journey-node .node-note {
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  color: var(--cyan);
+  background: rgba(13, 10, 28, 0.82);
+  border-radius: 6px;
+  padding: 2px 5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.journey-node .node-pulse {
+  position: absolute;
+  inset: -6px;
+  border: 3px solid var(--acid);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.journey-node.state-locked { opacity: 0.66; background: var(--panel-deep); color: var(--muted); }
+.journey-node.state-active {
+  background: rgba(142, 246, 91, 0.22);
+  box-shadow: var(--shadow-pop-sm), 0 0 18px rgba(142, 246, 91, 0.55);
+}
+.journey-node.state-completed { background: rgba(142, 246, 91, 0.16); color: var(--acid); }
+.journey-node.state-skipped { background: rgba(82, 229, 255, 0.14); color: var(--cyan); }
+
+.journey-node.emergency { border-radius: 14px; }
+.journey-node.emergency .node-face { color: var(--amber); }
+.journey-node.emergency.state-active {
+  background: rgba(255, 79, 109, 0.22);
+  box-shadow: var(--shadow-pop-sm), 0 0 18px rgba(255, 79, 109, 0.6);
+}
+.journey-node.emergency.state-active .node-pulse { border-color: var(--danger); }
+
+.ship-marker {
+  position: absolute;
+  font-size: 22px;
+  transform: rotate(-45deg);
+  filter: drop-shadow(2px 2px 0 var(--ink));
+  pointer-events: none;
+  z-index: 2;
+}
+
+.journey-daily {
+  position: sticky;
+  bottom: calc(70px + env(safe-area-inset-bottom));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+  padding-bottom: 10px;
+}
+.daily-card { background: var(--panel); }
+.daily-card h2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.locked-hint {
+  margin: 0;
+  padding: 10px 14px;
+  border: var(--line-w) solid var(--ink);
+  border-radius: 12px;
+  background: var(--panel-deep);
+  box-shadow: var(--shadow-pop-sm);
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.alert-tag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 7px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--danger);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  vertical-align: middle;
+}
+
+.mission-player-head.alert-head {
+  box-shadow: inset 0 -4px 0 var(--danger);
+  background: linear-gradient(180deg, rgba(255, 79, 109, 0.14), transparent 85%);
+}
+.kora-brief.alert-brief { box-shadow: var(--shadow-pop-sm), inset 4px 0 0 var(--danger); }
+.mission-player.emergency .mission-phase h1 { color: var(--amber); }
+
+/* «впиши ответ» */
+.write-task { display: flex; flex-direction: column; gap: 10px; }
+.write-task input {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: var(--line-w) solid var(--ink);
+  border-radius: 12px;
+  background: var(--panel-deep);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  box-shadow: var(--shadow-pop-sm);
+}
+.write-task input:focus-visible { outline: 3px solid var(--acid); outline-offset: 2px; }
+
+/* interlude-реплики экипажа на экране разбора */
+.interlude-block { display: flex; flex-direction: column; gap: 8px; }
+.interlude-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: var(--line-w) solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--panel-deep);
+  box-shadow: var(--shadow-pop-sm);
+}
+.interlude-line p { margin: 0; line-height: 1.5; }
+.interlude-speaker { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; }
+
+/* бонус-оффер испытания KORA */
+.bonus-offer h1 { color: var(--cyan); }
+.bonus-note { margin: 0; color: var(--acid); font-weight: 600; line-height: 1.5; }
+
+@media (min-width: 900px) {
+  .journey-daily { bottom: 12px; }
+}

@@ -121,11 +121,11 @@ function SectorReveal({ profile, onProfileChange }: CalibrationProps) {
   if (!result) {
     return null;
   }
-  const recommendedLabel = sectorNames[result.recommendedSector];
   const skipCount = result.skipMissionIds.length;
 
-  function chooseSector(sector: SectorId) {
-    onProfileChange((p) => ({ ...p, sector }));
+  // единый маршрут путешествия: сектор фиксируется автоматически, выбора больше нет
+  function launchJourney() {
+    onProfileChange((p) => ({ ...p, sector: "code" }));
   }
 
   function toggleOverride() {
@@ -147,10 +147,8 @@ function SectorReveal({ profile, onProfileChange }: CalibrationProps) {
       <span className="prologue-speaker speaker-kora">KORA · РЕЗУЛЬТАТ</span>
       <h1>Калибровка завершена</h1>
       <p>
-        Я вижу карту твоих систем. Что активировать первым? Рекомендую сектор «{recommendedLabel}»
-        {result.recommendedSector === "code"
-          ? " — базовые системы требуют активации: начнём с того, как машина читает программу."
-          : " — базовые системы стабильны: уверенные ответы по коду позволяют начать с AI-кодинга."}
+        Я вижу карту твоих систем. Маршрут построен: Земля → МКС → Луна, дальше — ветка Бортового
+        ИИ до Марса. По пути встретятся аварии корабля — их чинят тем, что уже доказано.
       </p>
       <ul className="skill-map">
         {Object.entries(result.capabilities).map(([skillId, cap]) => (
@@ -164,8 +162,8 @@ function SectorReveal({ profile, onProfileChange }: CalibrationProps) {
         <div className="skip-block">
           <p>
             Уверенные верные ответы позволяют пропустить {skipCount}{" "}
-            {skipCount === 1 ? "миссию" : skipCount < 5 ? "миссии" : "миссий"} главы 1. Пропущенное
-            всегда можно открыть с карты Atlas.
+            {skipCount === 1 ? "узел" : skipCount < 5 ? "узла" : "узлов"} тропы — они будут отмечены
+            «уже знаешь». Пропущенное всегда можно пройти с карты навыков.
           </p>
           <label className="confident-toggle">
             <input
@@ -177,20 +175,9 @@ function SectorReveal({ profile, onProfileChange }: CalibrationProps) {
           </label>
         </div>
       )}
-      <h2>Выбери сектор</h2>
-      <div className="sector-cards">
-        {(Object.keys(sectorNames) as SectorId[]).map((sector) => (
-          <button key={sector} type="button" className="sector-card" onClick={() => chooseSector(sector)}>
-            <b>{sectorNames[sector]}</b>
-            <small>
-              {sector === "code"
-                ? "Python: читать код и предсказывать, что он сделает"
-                : "Модель, контекст, проверка и границы разрешений"}
-            </small>
-            {sector === result.recommendedSector && <span className="recommended">рекомендовано</span>}
-          </button>
-        ))}
-      </div>
+      <button type="button" className="prologue-action" onClick={launchJourney}>
+        В путь
+      </button>
       <button type="button" className="prologue-skip" onClick={redoCalibration}>
         Повторить калибровку
       </button>
