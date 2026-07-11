@@ -909,8 +909,8 @@ html { overflow-x: clip; }
   left: var(--x);
   top: var(--y);
   transform: translate(-50%, -50%);
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -924,10 +924,12 @@ html { overflow-x: clip; }
   box-shadow: var(--shadow-pop-sm);
   font-family: var(--font-display);
 }
-.journey-node .node-face { font-size: 15px; line-height: 1; }
+.journey-node .node-face { font-size: 13px; line-height: 1; }
 .journey-node .node-code {
   position: absolute;
-  top: calc(100% + 4px);
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -940,7 +942,9 @@ html { overflow-x: clip; }
 }
 .journey-node .node-note {
   position: absolute;
-  bottom: calc(100% + 3px);
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 8px;
   color: var(--cyan);
   background: rgba(13, 10, 28, 0.82);
@@ -951,7 +955,7 @@ html { overflow-x: clip; }
 }
 .journey-node .node-pulse {
   position: absolute;
-  inset: -7px;
+  inset: -6px;
   border: 3px solid var(--acid);
   border-radius: 50%;
   pointer-events: none;

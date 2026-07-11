@@ -5,17 +5,17 @@
     { "id": "moon-mars", "title": "Луна → Марс (Бортовой ИИ)", "from": "Луна", "to": "Марс" }
   ],
   "nodes": [
-    { "missionId": "code-01", "stage": "earth-iss", "x": 52, "y": 79, "kind": "mission" },
-    { "missionId": "code-02", "stage": "earth-iss", "x": 46, "y": 73, "kind": "mission" },
-    { "missionId": "sos-01", "stage": "earth-iss", "x": 44, "y": 68, "kind": "emergency" },
-    { "missionId": "code-03", "stage": "earth-iss", "x": 46, "y": 62, "kind": "mission" },
-    { "missionId": "code-04", "stage": "iss-moon", "x": 50, "y": 57, "kind": "mission" },
-    { "missionId": "sos-02", "stage": "iss-moon", "x": 52, "y": 52, "kind": "emergency" },
-    { "missionId": "code-05", "stage": "iss-moon", "x": 48, "y": 48, "kind": "mission" },
-    { "missionId": "code-06", "stage": "iss-moon", "x": 46, "y": 43, "kind": "mission" },
-    { "missionId": "agent-01", "stage": "moon-mars", "x": 48, "y": 36, "kind": "mission" },
-    { "missionId": "sos-03", "stage": "moon-mars", "x": 45, "y": 30, "kind": "emergency" },
-    { "missionId": "agent-02", "stage": "moon-mars", "x": 45, "y": 24, "kind": "mission" },
-    { "missionId": "agent-03", "stage": "moon-mars", "x": 48, "y": 17, "kind": "mission" }
+    { "missionId": "code-01", "stage": "earth-iss", "x": 51.5, "y": 77, "kind": "mission" },
+    { "missionId": "code-02", "stage": "earth-iss", "x": 49, "y": 71.5, "kind": "mission" },
+    { "missionId": "sos-01", "stage": "earth-iss", "x": 44.5, "y": 66.5, "kind": "emergency" },
+    { "missionId": "code-03", "stage": "earth-iss", "x": 44, "y": 61, "kind": "mission" },
+    { "missionId": "code-04", "stage": "iss-moon", "x": 47, "y": 56.5, "kind": "mission" },
+    { "missionId": "sos-02", "stage": "iss-moon", "x": 50.5, "y": 52, "kind": "emergency" },
+    { "missionId": "code-05", "stage": "iss-moon", "x": 46, "y": 47.5, "kind": "mission" },
+    { "missionId": "code-06", "stage": "iss-moon", "x": 42.5, "y": 43, "kind": "mission" },
+    { "missionId": "agent-01", "stage": "moon-mars", "x": 47.5, "y": 36.5, "kind": "mission" },
+    { "missionId": "sos-03", "stage": "moon-mars", "x": 51.5, "y": 32, "kind": "emergency" },
+    { "missionId": "agent-02", "stage": "moon-mars", "x": 47.5, "y": 27, "kind": "mission" },
+    { "missionId": "agent-03", "stage": "moon-mars", "x": 46, "y": 21, "kind": "mission" }
   ]
 }

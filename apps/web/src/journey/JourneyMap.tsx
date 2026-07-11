@@ -82,7 +82,7 @@ export function JourneyMap({ profile, journey, missionsById, onStartMission }: J
           className="ship-marker"
           aria-hidden="true"
           initial={false}
-          animate={{ left: `${shipPos.x - 7}%`, top: `${shipPos.y + 1.6}%` }}
+          animate={{ left: `${shipPos.x - 9}%`, top: `${shipPos.y - 1.2}%` }}
           transition={{ type: "spring", stiffness: 60, damping: 14 }}
         >
           🚀
