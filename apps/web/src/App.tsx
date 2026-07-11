@@ -1,29 +1,28 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
-import type { AttemptRecord, Mission, Profile, SectorId } from "@orbitquest/contracts";
-import { characterArt, contentIndex, missionsById } from "./content/loader";
-import { applyMissionResult, missionAvailability, recommendMission } from "./missions/engine";
+import type { AttemptRecord, Mission, Profile } from "@orbitquest/contracts";
+import { characterArt, journey, missionsById } from "./content/loader";
+import { applyMissionResult } from "./missions/engine";
 import { MissionPlayer } from "./missions/MissionPlayer";
 import { AtlasMap } from "./atlas/AtlasMap";
-import { sectorNames } from "./diagnostic/Calibration";
+import { JourneyMap } from "./journey/JourneyMap";
+import { journeyNodeStates, recommendJourneyMission } from "./journey/progress";
 import { exportProfile, importProfile } from "./profile/storage";
 
-type DeckId = "bridge" | "atlas" | "profile";
+type DeckId = "journey" | "atlas" | "profile";
 
 const allDecks: Array<{ id: DeckId; icon: string; label: string }> = [
-  { id: "bridge", icon: "⌂", label: "Играть" },
+  { id: "journey", icon: "☄", label: "Путешествие" },
   { id: "atlas", icon: "✦", label: "Карта навыков" },
   { id: "profile", icon: "⌗", label: "Профиль" },
 ];
 
 const SHIP = { name: "Odyssey", registry: "NQ-07" };
 
-const availabilityLabels = {
-  new: "не начата",
-  skipped: "уже знаешь — можно пропустить",
-  completed: "пройдена ✓",
-  review: "пора освежить",
-} as const;
+const journeyMissionIds = journey.nodes.map((node) => node.missionId);
+const emergencyMissionIds = new Set(
+  journey.nodes.filter((node) => node.kind === "emergency").map((node) => node.missionId),
+);
 
 function countCompleted(profile: Profile): number {
   return Object.values(profile.missions).filter(
@@ -37,14 +36,12 @@ interface AppProps {
 }
 
 export function App({ profile, onProfileChange }: AppProps) {
-  const sector: SectorId = profile.sector ?? "code";
-  const order = contentIndex.missionOrder[sector];
   const completedTotal = countCompleted(profile);
 
-  const [activeDeck, setActiveDeck] = useState<DeckId>("bridge");
-  // первый заход после калибровки — сразу в миссию дня, без экранов-посредников
+  const [activeDeck, setActiveDeck] = useState<DeckId>("journey");
+  // первый заход после калибровки — сразу в первый узел тропы, без экранов-посредников
   const [activeMissionId, setActiveMissionId] = useState<string | null>(() =>
-    completedTotal === 0 ? recommendMission(profile, order, missionsById, new Date()) : null,
+    completedTotal === 0 ? recommendJourneyMission(profile, journey, missionsById, new Date()) : null,
   );
 
   const decks = completedTotal >= 1 ? allDecks : allDecks.slice(0, 1);
@@ -60,16 +57,20 @@ export function App({ profile, onProfileChange }: AppProps) {
     return (
       <MissionPlayer
         mission={activeMission}
+        emergency={emergencyMissionIds.has(activeMission.id)}
         onExit={() => setActiveMissionId(null)}
         onComplete={handleComplete(activeMission)}
       />
     );
   }
 
+  const nodeViews = journeyNodeStates(profile, journey.nodes, new Date());
+  const passedCount = nodeViews.filter((v) => v.state === "completed" || v.state === "skipped").length;
+
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button className="brand" type="button" onClick={() => setActiveDeck("bridge")}>
+        <button className="brand" type="button" onClick={() => setActiveDeck("journey")}>
           <span className="brand-mark">
             <i />
           </span>
@@ -82,7 +83,7 @@ export function App({ profile, onProfileChange }: AppProps) {
             {SHIP.name} · {SHIP.registry}
           </small>
           <strong>
-            <i /> КУРС: {sectorNames[sector].toUpperCase()}
+            <i /> РЕЙС: ЗЕМЛЯ → МАРС
           </strong>
         </div>
       </header>
@@ -105,28 +106,50 @@ export function App({ profile, onProfileChange }: AppProps) {
           <span>{(profile.navigatorName || "НВ").slice(0, 2).toUpperCase()}</span>
           <div>
             <b>Навигатор {profile.navigatorName || "без имени"}</b>
-            <small>курс: {sectorNames[sector]}</small>
+            <small>
+              узлов пройдено: {passedCount}/{journey.nodes.length}
+            </small>
           </div>
         </div>
       </aside>
 
       <main className="main-viewport">
-        {activeDeck === "bridge" && (
-          <Bridge
-            profile={profile}
-            sector={sector}
-            order={order}
-            completedTotal={completedTotal}
-            onStartMission={setActiveMissionId}
-            onSwitchSector={(next) => onProfileChange((p) => ({ ...p, sector: next }))}
-          />
+        {activeDeck === "journey" && (
+          <section className="deck-view journey-view" aria-labelledby="journey-title">
+            <header className="deck-heading">
+              <small>МАРШРУТ · ГЛАВА 1</small>
+              <h1 id="journey-title">Путешествие Odyssey</h1>
+              <p>
+                Пройдено {passedCount} из {journey.nodes.length} узлов тропы. Одна миссия в день —
+                хороший темп; больше — твой выбор.
+              </p>
+            </header>
+            {completedTotal === 1 && (
+              <motion.div
+                className="kora-note"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {characterArt.kora && <img className="dialog-portrait sm" src={characterArt.kora} alt="KORA" />}
+                <p>
+                  <b>KORA:</b> Первый узел тропы закрыт — палуба навигации проснулась. Внизу появилась
+                  «Карта навыков»: там видно, что уже доказано делом.
+                </p>
+              </motion.div>
+            )}
+            <JourneyMap
+              profile={profile}
+              journey={journey}
+              missionsById={missionsById}
+              onStartMission={setActiveMissionId}
+            />
+          </section>
         )}
         {activeDeck === "atlas" && (
           <AtlasMap
             profile={profile}
             missionsById={missionsById}
-            order={order}
-            sector={sector}
+            missionIds={journeyMissionIds}
             onStartMission={(id) => setActiveMissionId(id)}
           />
         )}
@@ -149,104 +172,6 @@ export function App({ profile, onProfileChange }: AppProps) {
         </nav>
       )}
     </div>
-  );
-}
-
-interface BridgeProps {
-  profile: Profile;
-  sector: SectorId;
-  order: string[];
-  completedTotal: number;
-  onStartMission: (missionId: string) => void;
-  onSwitchSector: (sector: SectorId) => void;
-}
-
-function Bridge({ profile, sector, order, completedTotal, onStartMission, onSwitchSector }: BridgeProps) {
-  const today = new Date();
-  const recommendedId = recommendMission(profile, order, missionsById, today);
-  const recommended = recommendedId ? missionsById[recommendedId] : undefined;
-  const completedInSector = order.filter(
-    (id) => missionAvailability(profile, id, today) === "completed",
-  ).length;
-  const otherSector: SectorId = sector === "code" ? "agent" : "code";
-
-  return (
-    <section className="deck-view bridge-view-v2" aria-labelledby="bridge-title">
-      <header className="deck-heading">
-        <small>МОСТИК · ГЛАВА 1</small>
-        <h1 id="bridge-title">{sectorNames[sector]}</h1>
-        <p>
-          Пройдено {completedInSector} из {order.length} миссий. Одна миссия в день — хороший темп;
-          больше — твой выбор.
-        </p>
-      </header>
-
-      {completedTotal === 1 && (
-        <motion.div
-          className="kora-note"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          {characterArt.kora && <img className="dialog-portrait sm" src={characterArt.kora} alt="KORA" />}
-          <p>
-            <b>KORA:</b> Первый спутник снова в строю — палуба навигации проснулась. Внизу появилась
-            «Карта навыков»: там видно, что уже доказано делом.
-          </p>
-        </motion.div>
-      )}
-
-      {recommended ? (
-        <article className="mission-card recommended-card">
-          <header>
-            <span>МИССИЯ НА СЕГОДНЯ</span>
-            <small>≈ {recommended.durationMinutes} мин</small>
-          </header>
-          <h2>
-            {recommended.title}
-            <small className="mission-code"> · {recommended.satelliteId}</small>
-          </h2>
-          <p>{recommended.why}</p>
-          <button type="button" className="prologue-action" onClick={() => onStartMission(recommended.id)}>
-            {missionAvailability(profile, recommended.id, today) === "review" ? "Освежить" : "Играть"}
-          </button>
-        </article>
-      ) : (
-        <article className="mission-card">
-          <h2>Глава пройдена</h2>
-          <p>
-            Все миссии курса пройдены, повторения ещё не созрели. Можно сменить курс или вернуться
-            позже.
-          </p>
-        </article>
-      )}
-
-      <details className="mission-details">
-        <summary>Все миссии главы</summary>
-        <div className="mission-list">
-          {order.map((missionId) => {
-            const mission = missionsById[missionId];
-            if (!mission) return null;
-            const availability = missionAvailability(profile, missionId, today);
-            return (
-              <button
-                key={missionId}
-                type="button"
-                className={`mission-row status-${availability}`}
-                onClick={() => onStartMission(missionId)}
-              >
-                <b>{mission.satelliteId}</b>
-                <span>{mission.title}</span>
-                <small>{availabilityLabels[availability]}</small>
-              </button>
-            );
-          })}
-        </div>
-      </details>
-
-      <button type="button" className="sector-switch" onClick={() => onSwitchSector(otherSector)}>
-        Сменить курс: «{sectorNames[otherSector]}» — прогресс хранится отдельно
-      </button>
-    </section>
   );
 }
 
